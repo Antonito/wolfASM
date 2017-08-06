@@ -29,8 +29,8 @@ game_loop:
         call wolfasm_display
 
         ;; Tick to 60fps TODO
-        mov   rdi, 1
-        call  _SDL_Delay
+        ;mov   rdi, 1
+        ;call  _SDL_Delay
 
         ;; Go back to loop
         jmp   .loop

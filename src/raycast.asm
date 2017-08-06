@@ -5,10 +5,18 @@
         section .text
         global wolfasm_raycast
 
+        ;; C function TODO: rm
+        extern wolfasm_raycast_pix_crwapper
+
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
         push  rbp
         mov   rbp, rsp
+
+        call  wolfasm_raycast_pix_crwapper
+        mov   rsp, rbp
+        pop   rbp
+        ret
 
         xor   rdi, rdi
 .loop_y:
