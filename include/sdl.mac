@@ -3,3 +3,15 @@
 %define SDL_INIT_VIDEO  0x00000020
 %define SDL_WINDOWPOS_UNDEFINED 0x1FFF0000
 %define SDL_WINDOW_SHOWN 0x00000004
+
+;; Events type
+%define SDL_QUIT 0x100
+%define SDL_KEYDOWN 0x300
+%define SDL_KEYUP 0x301
+%define SDL_MOUSEMOTION 0x400
+%define SDL_MOUSEBUTTONDOWN 0x401
+%define SDL_MOUSEBUTTONUP 0x402
+
+struc sdl_event
+    .type resd 1
+endstruc

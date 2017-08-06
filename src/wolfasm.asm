@@ -7,7 +7,7 @@
         global wolfasm
 
         ;; SDL functions
-        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _exit
+        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _exit
 
         ;; wolfasm functions
         extern game_loop
@@ -35,6 +35,10 @@ wolfasm:
 
         ;; Starts the game loop
         call  game_loop
+
+        ;; Destroy window TODO
+        ;;mov   qword rdi, [rel window_ptr]
+        ;;call  _SDL_DestroyWindow
 
         ;; Leave program, everything went right
         mov   rax, 0
