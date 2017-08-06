@@ -48,6 +48,8 @@ wolfasm:
         je    .exit_fail
         mov   qword [rel window_surface], rax
 
+        ;; TODO: Load map here
+
         ;; Starts the game loop
         call  game_loop
 
