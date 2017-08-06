@@ -1,0 +1,5 @@
+;; Useful definitions for using SDL2 in assembly
+
+%define SDL_INIT_VIDEO  0x00000020
+%define SDL_WINDOWPOS_UNDEFINED 0x1FFF0000
+%define SDL_WINDOW_SHOWN 0x00000004
