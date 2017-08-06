@@ -7,4 +7,4 @@ I am building it again, but this time in x86_64 assembly.
 
 
 ![WolfASM ScreenShot](http://i.imgur.com/9NJU3Ni.png "WolfASM ScreenShot")
- _ Current progress _
+ _Current progress_
