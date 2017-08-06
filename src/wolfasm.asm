@@ -1,7 +1,7 @@
         [bits 64]
 
-        %include "sdl.mac"
-        %include "window.mac"
+        %include "sdl.inc"
+        %include "window.inc"
 
         section .text
         global wolfasm

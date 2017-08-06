@@ -1,6 +1,6 @@
         [bits 64]
 
-        %include "sdl.mac"
+        %include "sdl.inc"
 
         section .text
         global wolfasm_events_keyboard_down, wolfasm_events_keyboard_up

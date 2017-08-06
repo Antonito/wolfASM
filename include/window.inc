@@ -1,0 +1,5 @@
+%define WIN_WIDTH   640
+%define WIN_HEIGHT  480
+
+%define SKY_COLOR   0x4D9FE8
+%define GROUND_COLOR 0x9D9FA1

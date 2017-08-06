@@ -6,13 +6,15 @@
         extern _SDL_Delay
 
         ;; wolfasm functions
-        extern wolfasm_events, wolfasm_display
+        extern wolfasm_events, wolfasm_display, wolfasm_logic,  wolfasm_display_clean
 
 game_loop:
         push  rbp
         mov   rbp, rsp
         mov   dword [rel game_running], 1
 
+        ;; Clean the display once
+        call  wolfasm_display_clean
 .loop:
         cmp   dword [rel game_running], 0
         je    .end_loop
@@ -21,11 +23,12 @@ game_loop:
         call  wolfasm_events
 
         ;; Process game logic
+        call  wolfasm_logic
 
         ;; Update display
         call wolfasm_display
 
-        ;; Tick to 60fps
+        ;; Tick to 60fps TODO
         mov   rdi, 1
         call  _SDL_Delay
 

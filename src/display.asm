@@ -1,9 +1,9 @@
         [bits 64]
         section .text
 
-        %include "window.mac"
+        %include "window.inc"
 
-        global wolfasm_display, wolfasm_put_pixel
+        global wolfasm_display, wolfasm_put_pixel, wolfasm_display_clean
 
         ;; SDL functions
         extern _SDL_UpdateWindowSurface, _SDL_LockSurface, _SDL_UnlockSurface
@@ -11,13 +11,18 @@
         ;; wolfasm symbols
         extern window_surface, window_ptr
 
+        ;; wolfasm functions
+        extern wolfasm_raycast
+
 ;; This functions handle the graphic part of the game
 wolfasm_display:
         push  rbp
         mov   rbp, rsp
 
         ;; Process graphics
-        call  wolfasm_display_clean
+        call  wolfasm_set_sky
+        call  wolfasm_set_ground
+        call  wolfasm_raycast
 
         ;; Display graphics
         mov   rdi, [rel window_ptr]
@@ -102,6 +107,77 @@ wolfasm_put_pixel:
         mov   rdi, [rel window_surface]
         call  _SDL_UnlockSurface
 
+        mov   rsp, rbp
+        pop   rbp
+        ret
+
+;; Draw the sky
+wolfasm_set_sky:
+        push  rbp
+        mov   rbp, rsp
+
+        xor   rsi, rsi
+.loop_y:
+        cmp    rsi, WIN_HEIGHT / 2
+        je    .end_loop_y
+
+        xor   rdi, rdi
+
+.loop_x:
+        cmp   rdi, WIN_WIDTH
+        je    .end_loop_x
+
+        push  rdi
+        push  rsi
+        mov   edx, SKY_COLOR
+        call  wolfasm_put_pixel
+        pop   rsi
+        pop   rdi
+
+        inc   rdi
+        jmp   .loop_x
+.end_loop_x:
+
+        inc   rsi
+        jmp   .loop_y
+
+.end_loop_y:
+        mov   rsp, rbp
+        pop   rbp
+        ret
+
+;; Draw the ground
+wolfasm_set_ground:
+        push  rbp
+        mov   rbp, rsp
+
+        xor   rsi, rsi
+        mov   rsi, WIN_HEIGHT / 2
+.loop_y:
+        cmp    rsi, WIN_HEIGHT
+        je    .end_loop_y
+
+        xor   rdi, rdi
+
+.loop_x:
+        cmp   rdi, WIN_WIDTH
+        je    .end_loop_x
+
+        push  rdi
+        push  rsi
+        mov   edx, GROUND_COLOR
+        call  wolfasm_put_pixel
+        pop   rsi
+        pop   rdi
+
+        inc   rdi
+        jmp   .loop_x
+.end_loop_x:
+
+        inc   rsi
+        jmp   .loop_y
+
+.end_loop_y:
         mov   rsp, rbp
         pop   rbp
         ret

@@ -1,6 +1,6 @@
         [bits 64]
 
-        %include "sdl.mac"
+        %include "sdl.inc"
 
         section .text
         global wolfasm_events_mouse_down, wolfasm_events_mouse_up, wolfasm_event_mouse_motion
