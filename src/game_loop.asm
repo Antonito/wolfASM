@@ -22,7 +22,7 @@ game_loop:
 
         ;; Process game logic
 
-        ;; Upadte display
+        ;; Update display
 
         ;; Tick to 60fps
         mov   rdi, 1

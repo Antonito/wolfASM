@@ -38,7 +38,7 @@ wolfasm:
         ;; Starts the game loop
         call  game_loop
 
-        ;; Destroy window TODO
+        ;; Destroy window
         mov   qword rdi, [rel window_ptr]
         call  _SDL_DestroyWindow
 

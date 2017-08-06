@@ -1,26 +1,34 @@
 AS:=			nasm
+CC?=			clang
 LD:=			ld
 RM?=			rm -f
 
 NAME:=		wolfasm
 
-SRC:=			$(shell find -E . -regex '.*\.(asm)')
+SRC:=			$(shell find -E . -regex '.*\.(asm|c)')
 
+CFLAGS+=	-Weverything -O0
 ASFLAGS+=	-f macho64 -I./include/ -g -O0
-LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2
+LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2 -macosx_version_min 10.12
 
-OBJ:=			$(SRC:%.asm=%.o)
+OBJ_S:=			$(SRC:%.asm=%.o)
+OBJ_C:=			$(SRC:%.c=%.o)
+OBJ:=				$(filter %.o, $(OBJ_C) $(OBJ_S))
 
 $(NAME):	$(OBJ)
-	$(LD) $(LDFLAGS) -o $(NAME) $(OBJ)
+		$(LD) $(LDFLAGS) -o $(NAME) $(OBJ)
 
 %.o: %.asm
-	$(AS) $(ASFLAGS) -o $@ $<
+		$(AS) $(ASFLAGS) -o $@ $<
+
+%.o: %.c
+		$(CC) $(CFLAGS) -c -o $@ $<
 
 all: $(NAME)
 
 clean:
 		$(RM)	$(OBJ)
+		$(RM)	$(NAME)
 
 re:		clean all
 
