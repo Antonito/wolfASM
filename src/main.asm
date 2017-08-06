@@ -9,6 +9,8 @@
         extern wolfasm
 
 start:
+  mov   rbp,  rsp
+
   ;; Start the game
   call wolfasm
 

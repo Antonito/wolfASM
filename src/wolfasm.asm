@@ -15,6 +15,8 @@
 ;; This function starts a window, and calls the game loop
 wolfasm:
         push  rbp
+        mov   rbp, rsp
+
         ;; Initialize SDL
         mov   rdi, SDL_INIT_VIDEO
         call  _SDL_Init
@@ -37,8 +39,8 @@ wolfasm:
         call  game_loop
 
         ;; Destroy window TODO
-        ;;mov   qword rdi, [rel window_ptr]
-        ;;call  _SDL_DestroyWindow
+        mov   qword rdi, [rel window_ptr]
+        call  _SDL_DestroyWindow
 
         ;; Leave program, everything went right
         mov   rax, 0
@@ -48,11 +50,13 @@ wolfasm:
 
 .exit:
         ;; Cleanup before leaving
-        sub     rsp, 8
         push  rax
+        sub   rsp, 8
         call  _SDL_Quit
+        add   rsp, 8
         pop   rax
-        add     rsp, 8
+
+        mov   rsp, rbp
         pop   rbp
         ret
 

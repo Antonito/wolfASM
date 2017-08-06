@@ -6,7 +6,7 @@ NAME:=		wolfasm
 
 SRC:=			$(shell find -E . -regex '.*\.(asm)')
 
-ASFLAGS+=	-f macho64 -I./include/ -g
+ASFLAGS+=	-f macho64 -I./include/ -g -O0
 LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2
 
 OBJ:=			$(SRC:%.asm=%.o)
@@ -22,6 +22,6 @@ all: $(NAME)
 clean:
 		$(RM)	$(OBJ)
 
-re:		all clean
+re:		clean all
 
 .PHONY:	clean re all

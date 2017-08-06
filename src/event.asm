@@ -14,53 +14,55 @@
 ;; This function process the events
 wolfasm_events:
         push  rbp
+        mov   rbp, rsp
+
 .poll:
         mov   rdi, event
         call  _SDL_PollEvent
-        cmp   rax, 0
 
         ;; Check if we have any event to process
+        cmp   rax, 0
         je    .end_poll
 
         cmp   dword [rel event], SDL_QUIT
         jne   .check_keydown
         ;; Handle SQL_QUIT here
-        mov byte [rel game_running], 0
-        jmp   .end_check
+        mov   dword [rel game_running], 0
+        jmp   .poll
 
 .check_keydown:
         cmp   dword [rel event], SDL_KEYDOWN
         jne   .check_keyup
         ;; Handle SQL_KEYDOWN here
-        jmp   .end_check
+        jmp   .poll
 
 .check_keyup:
-      cmp   dword [rel event], SDL_KEYUP
-      jne   .check_mousedown
-      ;; Handle SQL_KEYUP here
-      jmp   .end_check
+        cmp   dword [rel event], SDL_KEYUP
+        jne   .check_mousedown
+        ;; Handle SQL_KEYUP here
+        jmp   .poll
 
 .check_mousedown:
-      cmp   dword [rel event], SDL_MOUSEBUTTONDOWN
-      jne   .check_mouseup
-      ;; Handle SDL_MOUSEBUTTONDOWN here
-      jmp   .end_check
+        cmp   dword [rel event], SDL_MOUSEBUTTONDOWN
+        jne   .check_mouseup
+        ;; Handle SDL_MOUSEBUTTONDOWN here
+        jmp   .poll
 
 .check_mouseup:
-      cmp   dword [rel event], SDL_MOUSEBUTTONUP
-      jne   .check_mousemotion
-      ;; Handle SDL_MOUSEBUTTONUP hereSDL_MOUSEMOTION
-      jmp   .end_check
+        cmp   dword [rel event], SDL_MOUSEBUTTONUP
+        jne   .check_mousemotion
+        ;; Handle SDL_MOUSEBUTTONUP hereSDL_MOUSEMOTION
+        jmp   .poll
 
 .check_mousemotion:
-      cmp   dword [rel event], SDL_MOUSEMOTION
-      jne   .end_check
-      ;; Handle SDL_MOUSEMOTION here
+        cmp   dword [rel event], SDL_MOUSEMOTION
+        jne   .poll
+        ;; Handle SDL_MOUSEMOTION here
 
-.end_check:
         jmp   .poll
 
 .end_poll:
+        mov   rsp, rbp
         pop   rbp
         ret
 
