@@ -6,7 +6,7 @@
         extern _SDL_Delay
 
         ;; wolfasm functions
-        extern wolfasm_events
+        extern wolfasm_events, wolfasm_display
 
 game_loop:
         push  rbp
@@ -23,6 +23,7 @@ game_loop:
         ;; Process game logic
 
         ;; Update display
+        call wolfasm_display
 
         ;; Tick to 60fps
         mov   rdi, 1

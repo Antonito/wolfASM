@@ -5,9 +5,13 @@
 
         section .text
         global wolfasm
+        global window_ptr, window_surface
 
         ;; SDL functions
-        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _exit
+        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _SDL_GetWindowSurface
+
+        ;; Syscalls
+        extern _exit
 
         ;; wolfasm functions
         extern game_loop
@@ -31,9 +35,18 @@ wolfasm:
         call  _SDL_CreateWindow
         mov qword [rel window_ptr], rax
 
-        ;; Check that is non zero
+        ;; Check that is non NULL
         cmp   qword [rel window_ptr], 0x0
         je    .exit_fail
+
+        ;; Get the window's surface
+        mov   rdi, [rel window_ptr]
+        call  _SDL_GetWindowSurface
+
+        ;; Check that is non NULL
+        cmp   rax, 0x0
+        je    .exit_fail
+        mov   qword [rel window_surface], rax
 
         ;; Starts the game loop
         call  game_loop
@@ -62,6 +75,7 @@ wolfasm:
 
         section .data
 window_ptr dq 1
+window_surface dq 1
 
         section .rodata
 window_name db "WolfASM - bache_a", 0x00
