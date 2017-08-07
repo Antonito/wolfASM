@@ -1,19 +1,22 @@
         [bits 64]
-        section .text
 
         %include "window.inc"
 
         global wolfasm_display, wolfasm_put_pixel, wolfasm_display_clean
 
         ;; SDL functions
-        extern _SDL_UpdateWindowSurface, _SDL_LockSurface, _SDL_UnlockSurface
+        extern _SDL_UpdateWindowSurface, _SDL_LockSurface, _SDL_UnlockSurface, _SDL_RenderPresent
 
         ;; wolfasm symbols
-        extern window_surface, window_ptr
+        extern window_surface, window_ptr, window_renderer
 
         ;; wolfasm functions
-        extern wolfasm_raycast
+        extern wolfasm_raycast, wolfasm_display_gui
 
+        ;; TODO: rm
+        extern _display_gui
+
+        section .text
 ;; This functions handle the graphic part of the game
 wolfasm_display:
         push  rbp
@@ -23,6 +26,9 @@ wolfasm_display:
         call  wolfasm_set_sky
         call  wolfasm_set_ground
         call  wolfasm_raycast
+
+        call  wolfasm_display_gui
+        ;call  _display_gui
 
         ;; Display graphics
         mov   rdi, [rel window_ptr]

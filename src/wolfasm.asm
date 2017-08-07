@@ -5,16 +5,19 @@
 
         section .text
         global wolfasm
-        global window_ptr, window_surface
+        global window_ptr, window_surface, window_renderer
+
+        ;; TODO: rm
+        extern _init_gui, _deinit_gui
 
         ;; SDL functions
-        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _SDL_GetWindowSurface
+        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _SDL_GetWindowSurface, _SDL_GetRenderer
 
         ;; Syscalls
         extern _exit
 
         ;; wolfasm functions
-        extern game_loop
+        extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -31,7 +34,7 @@ wolfasm:
         mov   rdx, SDL_WINDOWPOS_UNDEFINED ;; Y Position
         mov   rcx, WIN_WIDTH ;; Width
         mov   r8, WIN_HEIGHT ;; Height
-        mov   r9, SDL_WINDOW_SHOWN ;; Flags
+        mov   r9, SDL_WINDOW_SHOWN;; Flags
         call  _SDL_CreateWindow
         mov qword [rel window_ptr], rax
 
@@ -48,10 +51,16 @@ wolfasm:
         je    .exit_fail
         mov   qword [rel window_surface], rax
 
+        ;; Initialize SDL_ttf
+        call  wolfasm_gui_init
+
         ;; TODO: Load map here
 
         ;; Starts the game loop
         call  game_loop
+
+        ;; Clean SDL_ttf
+        call  wolfasm_gui_deinit
 
         ;; Destroy window
         mov   qword rdi, [rel window_ptr]

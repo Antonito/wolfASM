@@ -3,7 +3,7 @@
         %include "player.inc"
 
         section .text
-        global game_loop, game_running
+        global game_loop, game_running, frame_time
 
         ;; SDL2 functions
         extern _SDL_GetTicks
@@ -63,6 +63,7 @@ wolfasm_ticks:
         mov       rax, 1000
         cvtsi2sd  xmm1, rax
         divsd     xmm0, xmm1
+        movsd     [rel frame_time], xmm0
 
         ;; Calculate new movement speed
         mov       rax, PLAYER_MODIFIER_MOV_SPEED
@@ -84,3 +85,4 @@ wolfasm_ticks:
 game_running  dd 0
 cur_time      do 0.0
 old_time      do 0.0
+frame_time    do 0.0
