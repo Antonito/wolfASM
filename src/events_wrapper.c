@@ -87,6 +87,7 @@ void wolfasm_events_keyboard_down_cwrapper(SDL_Event const *events) {
   case SDLK_a:
     wolfasm_player_rotate_left();
     break;
+
   default:
     break;
   }
