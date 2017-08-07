@@ -7,7 +7,8 @@
         global wolfasm_raycast
 
         ;; wolfasm symbols
-        extern game_player, map, map_width, wolfasm_put_pixel
+        extern game_player, map, map_width, wolfasm_put_pixel,  \
+        window_width, window_height
 
         ;; C function TODO: rm
         extern wolfasm_raycast_pix_crwapper
@@ -22,7 +23,7 @@ wolfasm_raycast:
 
         xor       rdi, rdi
 .loop_x:
-        cmp       rdi, WIN_WIDTH
+        cmp       rdi, [rel window_width]
         je        .loop_x_end
 
 .initialization:
@@ -30,7 +31,7 @@ wolfasm_raycast:
         mov       rax, rdi
         shl       rax, 1      ;; Multiply by 2
         cvtsi2sd  xmm0, rax
-        mov       rax, WIN_WIDTH
+        mov       rax, [rel window_width]
         cvtsi2sd  xmm1, rax
         divsd     xmm0, xmm1
         mov       rax, 1
@@ -248,7 +249,7 @@ wolfasm_raycast:
 
         ;; Calculate line to draw
 .compute_line_height:
-        mov       rax, WIN_HEIGHT
+        mov       rax, [rel window_height]
         cvtsi2sd  xmm0, rax
         divsd     xmm0, xmm1
         ;; Convert result to integer
@@ -258,7 +259,8 @@ wolfasm_raycast:
 .compute_limits:
 .compute_limits_start:
         xor       r8d, r8d
-        mov       edx, WIN_HEIGHT / 2
+        mov       edx, [rel window_height]
+        shr       edx, 1      ;; window_height / 2
         mov       ecx, esi
         shr       esi, 1      ;; line_height / 2
         mov       ecx, esi
@@ -268,10 +270,12 @@ wolfasm_raycast:
         cmovl     ecx, r8d
 
 .compute_limits_end:
-        mov       r8d, WIN_HEIGHT - 1
-        mov       edx, WIN_HEIGHT / 2
+        mov       r8d, [rel window_height]
+        dec       r8d       ;; window_height - 1
+        mov       edx, [rel window_height]
+        shr       edx, 1    ;; window_height / 2
         add       esi, edx
-        cmp       esi, WIN_HEIGHT
+        cmp       esi, [rel window_height]
         cmovge    esi, r8d
 
         ;; Determine wall color

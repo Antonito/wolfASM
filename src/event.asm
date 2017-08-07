@@ -14,7 +14,7 @@
         ;; wolfasm functions
         extern wolfasm_events_keyboard_down, wolfasm_events_keyboard_up,  \
         wolfasm_events_mouse_down, wolfasm_events_mouse_up,               \
-        wolfasm_event_mouse_motion
+        wolfasm_event_mouse_motion, wolfasm_event_window
 
 ;; This function process the events
 wolfasm_events:
@@ -62,8 +62,14 @@ wolfasm_events:
 
 .check_mousemotion:
         cmp   dword [rel game_events], SDL_MOUSEMOTION
-        jne   .poll
+        jne   .check_window
         call  wolfasm_event_mouse_motion
+        jmp   .poll
+
+.check_window:
+        cmp   dword [rel game_events], SDL_WINDOWEVENT
+        jne   .poll
+        call   wolfasm_event_window
         jmp   .poll
 
 .end_poll:

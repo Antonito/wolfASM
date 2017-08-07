@@ -20,8 +20,6 @@ game_loop:
         mov       rbp, rsp
         mov       dword [rel game_running], 1
 
-        ;; Clean the display once
-        call      wolfasm_display_clean
 .loop:
         cmp       dword [rel game_running], 0
         je        .end_loop

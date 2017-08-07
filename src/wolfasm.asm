@@ -5,7 +5,8 @@
 
         section .text
         global wolfasm
-        global window_ptr, window_surface, window_renderer
+        global window_ptr, window_surface, window_renderer,                 \
+        window_width, window_height
 
         ;; TODO: rm
         extern _init_gui, _deinit_gui
@@ -33,9 +34,10 @@ wolfasm:
         mov   rdi,  window_name ;; Window title
         mov   rsi, SDL_WINDOWPOS_UNDEFINED ;; X position
         mov   rdx, SDL_WINDOWPOS_UNDEFINED ;; Y Position
-        mov   rcx, WIN_WIDTH ;; Width
-        mov   r8, WIN_HEIGHT ;; Height
+        mov   rcx, [rel window_width] ;; Width
+        mov   r8, [rel window_height] ;; Height
         mov   r9, SDL_WINDOW_SHOWN;; Flags
+;;        mov   r9, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE ;; Flags
         call  _SDL_CreateWindow
         mov qword [rel window_ptr], rax
 
@@ -86,8 +88,10 @@ wolfasm:
         ret
 
         section .data
-window_ptr dq 1
-window_surface dq 1
+window_width    dq WIN_WIDTH
+window_height   dq WIN_HEIGHT
+window_ptr      dq 1
+window_surface  dq 1
 
         section .rodata
-window_name db "WolfASM - bache_a", 0x00
+window_name     db "WolfASM - bache_a", 0x00

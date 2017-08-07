@@ -20,6 +20,8 @@ void wolfasm_events_mouse_down_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_events_mouse_down_cwrapper");
 void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_events_mouse_motion_cwrapper");
+void wolfasm_event_window_cwrapper(SDL_Event const *events) __asm__(
+    "wolfasm_event_window_cwrapper");
 
 // Handle game events
 extern SDL_Event game_events;

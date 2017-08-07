@@ -74,3 +74,27 @@ void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) {
   int32_t mouse_y = events->motion.y;
   (void)mouse_x, (void)mouse_y;
 }
+
+// C-Wrapper for SDL_WINDOWEVENT events
+void wolfasm_event_window_cwrapper(SDL_Event const *events) {
+  assert(events == &game_events);
+  assert(events->type == SDL_WINDOWEVENT);
+  switch (events->window.event) {
+
+  // Handle resize of window
+  // TODO: Fix, seems not to work on OSX. Is it working on Linux ?
+  case SDL_WINDOWEVENT_RESIZED: {
+    extern SDL_Window *window_ptr __asm__("window_ptr");
+    extern int32_t window_width __asm__("window_width");
+    extern int32_t window_height __asm__("window_height");
+
+    printf("Window resized to %d x %d\n", events->window.data1,
+           events->window.data2);
+    window_width = events->window.data1;
+    window_height = events->window.data2;
+    SDL_SetWindowSize(window_ptr, window_width, window_height);
+  } break;
+  default:
+    break;
+  }
+}

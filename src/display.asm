@@ -2,20 +2,18 @@
 
         %include "window.inc"
 
-        global wolfasm_display, wolfasm_put_pixel, wolfasm_display_clean
+        global wolfasm_display, wolfasm_put_pixel
 
         ;; SDL functions
-        extern _SDL_UpdateWindowSurface, _SDL_LockSurface, \
+        extern _SDL_UpdateWindowSurface, _SDL_LockSurface,   \
         _SDL_UnlockSurface, _SDL_RenderPresent
 
         ;; wolfasm symbols
-        extern window_surface, window_ptr, window_renderer
+        extern window_surface, window_ptr, window_renderer,   \
+        window_width, window_height
 
         ;; wolfasm functions
         extern wolfasm_raycast, wolfasm_display_gui
-
-        ;; TODO: rm
-        extern _display_gui
 
         section .text
 ;; This functions handle the graphic part of the game
@@ -29,50 +27,11 @@ wolfasm_display:
         call  wolfasm_raycast
 
         call  wolfasm_display_gui
-        ;call  _display_gui
 
         ;; Display graphics
         mov   rdi, [rel window_ptr]
         call  _SDL_UpdateWindowSurface
 
-        mov   rsp, rbp
-        pop   rbp
-        ret
-
-wolfasm_display_clean:
-        push  rbp
-        mov   rbp, rsp
-
-        ;; Reset y to 0
-        xor   rsi, rsi
-.y_loop:
-        cmp   rsi, WIN_HEIGHT - 1
-        je    .end_y_loop
-
-        ;; Reset x to 0
-        xor   rdi, rdi
-.x_loop:
-        cmp   rdi, WIN_WIDTH - 1
-        je    .end_x_loop
-
-        ;; Set color, as rdi and rsi are already set
-        mov   rdx, 0x0
-        push  rsi
-        push  rdi
-        call  wolfasm_put_pixel
-        pop   rdi
-        pop   rsi
-
-        ;; Increment x counter
-        inc   rdi
-        jmp   .x_loop
-
-.end_x_loop:
-        ;; Increment y counter
-        inc   rsi
-        jmp   .y_loop
-
-.end_y_loop:
         mov   rsp, rbp
         pop   rbp
         ret
@@ -99,7 +58,7 @@ wolfasm_put_pixel:
 
         ;; Offset in array: (y * WIN_WIDTH + x) * 4
         ;; Compute offset in rcx : rcx = (rsi * WIN_WIDTH + rdi)
-        mov   eax, WIN_WIDTH
+        mov   eax, [rel window_width]
         mul   esi       ;; y * WIN_WIDTH
         add   eax, edi
         shl   eax, 2    ;; multiply by 4
@@ -124,20 +83,26 @@ wolfasm_set_sky:
         mov   rbp, rsp
 
         xor   rsi, rsi
+        mov   r8, [rel window_height]
+        shr   r8, 1 ;; window_height / 2
 .loop_y:
-        cmp    rsi, WIN_HEIGHT / 2
+        cmp    rsi, r8
         je    .end_loop_y
 
         xor   rdi, rdi
 
 .loop_x:
-        cmp   rdi, WIN_WIDTH
+        cmp   rdi, [rel window_width]
         je    .end_loop_x
 
         push  rdi
         push  rsi
+        push  r8
+        sub   rsp, 8
         mov   edx, SKY_COLOR
         call  wolfasm_put_pixel
+        add   rsp, 8
+        pop   r8
         pop   rsi
         pop   rdi
 
@@ -159,15 +124,16 @@ wolfasm_set_ground:
         mov   rbp, rsp
 
         xor   rsi, rsi
-        mov   rsi, WIN_HEIGHT / 2
+        mov   rsi, [rel window_height]
+        shr   rsi, 1    ;; window_height / 2
 .loop_y:
-        cmp    rsi, WIN_HEIGHT
+        cmp    rsi, [rel window_height]
         je    .end_loop_y
 
         xor   rdi, rdi
 
 .loop_x:
-        cmp   rdi, WIN_WIDTH
+        cmp   rdi, [rel window_width]
         je    .end_loop_x
 
         push  rdi
