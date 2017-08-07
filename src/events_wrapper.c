@@ -8,9 +8,6 @@ void wolfasm_player_move_backward(void) __asm__("wolfasm_player_move_backward");
 double wolfasm_player_rotate_right(void) __asm__("wolfasm_player_rotate_right");
 void wolfasm_player_rotate_left(void) __asm__("wolfasm_player_rotate_left");
 
-void wolfasm_put_pixel(int32_t x, int32_t y,
-                       int32_t argb) __asm__("wolfasm_put_pixel"); // TODO: rm
-
 // Prototypes
 void wolfasm_events_keyboard_up_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_events_keyboard_up_cwrapper");
