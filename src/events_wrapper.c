@@ -8,7 +8,7 @@
 // ASM Bindings
 void wolfasm_player_move_forward(void) __asm__("wolfasm_player_move_forward");
 void wolfasm_player_move_backward(void) __asm__("wolfasm_player_move_backward");
-void wolfasm_player_rotate_right(void) __asm__("wolfasm_player_rotate_right");
+double wolfasm_player_rotate_right(void) __asm__("wolfasm_player_rotate_right");
 void wolfasm_player_rotate_left(void) __asm__("wolfasm_player_rotate_left");
 
 void wolfasm_put_pixel(int32_t x, int32_t y,
@@ -79,43 +79,14 @@ void wolfasm_events_keyboard_down_cwrapper(SDL_Event const *events) {
     break;
 
   // Rotate right
-  case SDLK_d: {
-    // Update direction
+  case SDLK_d:
     wolfasm_player_rotate_right();
-    double const old_dir_x = game_player.dir_x;
-    game_player.dir_x = game_player.dir_x * cos(-game_player.rotation_speed) -
-                        game_player.dir_y * sin(-game_player.rotation_speed);
-    game_player.dir_y = old_dir_x * sin(-game_player.rotation_speed) +
-                        game_player.dir_y * cos(-game_player.rotation_speed);
-
-    // Update camera plan
-    double const old_plane_x = game_player.plane_x;
-    game_player.plane_x =
-        game_player.plane_x * cos(-game_player.rotation_speed) -
-        game_player.plane_y * sin(-game_player.rotation_speed);
-    game_player.plane_y =
-        old_plane_x * sin(-game_player.rotation_speed) +
-        game_player.plane_y * cos(-game_player.rotation_speed);
-  } break;
+    break;
 
   // Rotate left
-  case SDLK_a: {
-    // Update direction
+  case SDLK_a:
     wolfasm_player_rotate_left();
-    double const old_dir_x = game_player.dir_x;
-    game_player.dir_x = game_player.dir_x * cos(game_player.rotation_speed) -
-                        game_player.dir_y * sin(game_player.rotation_speed);
-    game_player.dir_y = old_dir_x * sin(game_player.rotation_speed) +
-                        game_player.dir_y * cos(game_player.rotation_speed);
-
-    // Update camera plan
-    double const old_plane_x = game_player.plane_x;
-    game_player.plane_x =
-        game_player.plane_x * cos(game_player.rotation_speed) -
-        game_player.plane_y * sin(game_player.rotation_speed);
-    game_player.plane_y = old_plane_x * sin(game_player.rotation_speed) +
-                          game_player.plane_y * cos(game_player.rotation_speed);
-  } break;
+    break;
   default:
     break;
   }
