@@ -65,13 +65,13 @@ wolfasm_ticks:
         divsd     xmm0, xmm1
 
         ;; Calculate new movement speed
-        mov       rax, 20
+        mov       rax, PLAYER_MODIFIER_MOV_SPEED
         cvtsi2sd  xmm1, rax
         mulsd     xmm1, xmm0
         movsd     [rel game_player + wolfasm_player.movement_speed], xmm1
 
         ;; Calculate new rotation speed
-        mov       rax, 12
+        mov       rax, PLAYER_MODIFIER_ROT_SPEED
         cvtsi2sd  xmm1, rax
         mulsd     xmm1, xmm0
         movsd     [rel game_player + wolfasm_player.rotation_speed], xmm1
