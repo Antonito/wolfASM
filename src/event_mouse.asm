@@ -6,7 +6,9 @@
         global wolfasm_events_mouse_down, wolfasm_events_mouse_up, wolfasm_event_mouse_motion
 
         ;; C wrapper
-        extern wolfasm_events_mouse_up_cwrapper, wolfasm_events_mouse_down_cwrapper, wolfasm_events_mouse_motion_cwrapper
+        extern wolfasm_events_mouse_up_cwrapper,  \
+        wolfasm_events_mouse_down_cwrapper,       \
+        wolfasm_events_mouse_motion_cwrapper
 
 ;; Handle events when a mouse button goes up
 wolfasm_events_mouse_up:

@@ -9,7 +9,8 @@
         extern _SDL_GetTicks
 
         ;; wolfasm functions
-        extern wolfasm_events, wolfasm_display, wolfasm_logic,  wolfasm_display_clean
+        extern wolfasm_events, wolfasm_display, wolfasm_logic, \
+        wolfasm_display_clean
 
         ;; wolfasm symbols
         extern game_player

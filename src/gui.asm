@@ -3,7 +3,9 @@
         global wolfasm_gui_init, wolfasm_gui_deinit, wolfasm_display_gui
 
         ;; SDL2 functions
-        extern _TTF_Init, _TTF_Quit, _TTF_OpenFont, _TTF_CloseFont, _SDL_GetError, _TTF_RenderText_Solid, _SDL_UpperBlit, _SDL_FreeSurface
+        extern _TTF_Init, _TTF_Quit, _TTF_OpenFont, _TTF_CloseFont, \
+        _SDL_GetError, _TTF_RenderText_Solid, _SDL_UpperBlit,       \
+        _SDL_FreeSurface
 
         ;; LibC functions
         extern _exit, _puts, _snprintf

@@ -8,7 +8,7 @@ NAME:=		wolfasm
 SRC:=			$(shell find -E . -regex '.*\.(asm|c)')
 
 CFLAGS+=	-I./include -Weverything -O0 -g
-ASFLAGS+=	-f macho64 -I./include/ -g -O0
+ASFLAGS+=	-f macho64 -I./include/ -O0 -g
 LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2 -lSDL2_ttf -macosx_version_min 10.12
 
 OBJ_S:=			$(SRC:%.asm=%.o)

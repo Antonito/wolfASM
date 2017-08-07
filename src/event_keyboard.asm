@@ -9,7 +9,8 @@
         extern game_running
 
         ;; C wrapper
-        extern wolfasm_events_keyboard_up_cwrapper, wolfasm_events_keyboard_down_cwrapper
+        extern wolfasm_events_keyboard_up_cwrapper, \
+        wolfasm_events_keyboard_down_cwrapper
 
 ;; Handle events when a key goes up
 wolfasm_events_keyboard_up:

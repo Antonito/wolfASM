@@ -5,7 +5,8 @@
         global wolfasm_display, wolfasm_put_pixel, wolfasm_display_clean
 
         ;; SDL functions
-        extern _SDL_UpdateWindowSurface, _SDL_LockSurface, _SDL_UnlockSurface, _SDL_RenderPresent
+        extern _SDL_UpdateWindowSurface, _SDL_LockSurface, \
+        _SDL_UnlockSurface, _SDL_RenderPresent
 
         ;; wolfasm symbols
         extern window_surface, window_ptr, window_renderer

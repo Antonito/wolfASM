@@ -4,7 +4,8 @@
 
         section .text
 
-        global wolfasm_player_move_forward, wolfasm_player_move_backward, wolfasm_player_rotate_right, wolfasm_player_rotate_left
+        global wolfasm_player_move_forward, wolfasm_player_move_backward, \
+        wolfasm_player_rotate_right, wolfasm_player_rotate_left
         global game_player
 
         extern map_width, map_height, map

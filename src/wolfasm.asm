@@ -11,7 +11,8 @@
         extern _init_gui, _deinit_gui
 
         ;; SDL functions
-        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, _SDL_GetWindowSurface, _SDL_GetRenderer
+        extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, \
+        _SDL_GetWindowSurface, _SDL_GetRenderer
 
         ;; Syscalls
         extern _exit

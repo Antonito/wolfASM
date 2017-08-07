@@ -12,7 +12,9 @@
         extern game_running, game_events
 
         ;; wolfasm functions
-        extern wolfasm_events_keyboard_down, wolfasm_events_keyboard_up, wolfasm_events_mouse_down, wolfasm_events_mouse_up, wolfasm_event_mouse_motion
+        extern wolfasm_events_keyboard_down, wolfasm_events_keyboard_up,  \
+        wolfasm_events_mouse_down, wolfasm_events_mouse_up,               \
+        wolfasm_event_mouse_motion
 
 ;; This function process the events
 wolfasm_events:
