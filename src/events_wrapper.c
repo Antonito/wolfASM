@@ -71,7 +71,6 @@ void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) {
   assert(events == &game_events);
   assert(events->type == SDL_MOUSEMOTION);
   int32_t mouse_x = events->motion.xrel;
-  int32_t mouse_y = events->motion.yrel;
 
   double const tmp_speed = game_player.rotation_speed;
   game_player.rotation_speed = 0.015; // Decrease speed

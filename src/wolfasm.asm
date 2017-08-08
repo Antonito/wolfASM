@@ -19,7 +19,8 @@
         extern _exit
 
         ;; wolfasm functions
-        extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit
+        extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit, \
+        wolfasm_init_texture, wolfasm_deinit_texture
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -60,12 +61,14 @@ wolfasm:
         ;; TODO: Load map here
 
         ;; Starts the game loop
+        call  wolfasm_init_texture
         call  _c_init   ;; TODO: rm
         call  game_loop
         call  _c_deinit ;; TODO: rm
 
         ;; Clean SDL_ttf
         call  wolfasm_gui_deinit
+        call  wolfasm_deinit_texture
 
         ;; Destroy window
         mov   qword rdi, [rel window_ptr]
