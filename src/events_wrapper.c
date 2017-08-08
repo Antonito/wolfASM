@@ -68,27 +68,15 @@ void wolfasm_events_mouse_down_cwrapper(SDL_Event const *events) {
 
 // C-Wrapper for SDL_MOUSEMOTION events
 void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) {
+  extern void wolfasm_event_mouse_motion_handle(int32_t rel_x) __asm__(
+      "wolfasm_event_mouse_motion_handle");
+
   assert(events == &game_events);
   assert(events->type == SDL_MOUSEMOTION);
+
   int32_t mouse_x = events->motion.xrel;
 
-  double const tmp_speed = game_player.rotation_speed;
-  game_player.rotation_speed = 0.015; // Decrease speed
-  if (mouse_x > 0) {
-    // Mouse moved right
-    while (mouse_x) {
-      wolfasm_player_rotate_right();
-      --mouse_x;
-    }
-  } else if (mouse_x < 0) {
-    // Mouse moved left
-    mouse_x = -mouse_x;
-    while (mouse_x) {
-      wolfasm_player_rotate_left();
-      --mouse_x;
-    }
-  }
-  game_player.rotation_speed = tmp_speed; // Restore speed
+  wolfasm_event_mouse_motion_handle(mouse_x);
 }
 
 // C-Wrapper for SDL_WINDOWEVENT events
