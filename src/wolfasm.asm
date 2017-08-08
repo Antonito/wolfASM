@@ -36,7 +36,7 @@ wolfasm:
         mov   rdx, SDL_WINDOWPOS_UNDEFINED ;; Y Position
         mov   rcx, [rel window_width] ;; Width
         mov   r8, [rel window_height] ;; Height
-        mov   r9, SDL_WINDOW_SHOWN;; Flags
+        mov   r9, SDL_WINDOW_SHOWN | SDL_WINDOW_MOUSE_CAPTURE;; Flags
 ;;        mov   r9, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE ;; Flags
         call  _SDL_CreateWindow
         mov qword [rel window_ptr], rax

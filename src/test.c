@@ -10,7 +10,10 @@ void c_init(void);
 void init_textures(void);
 void deinit_textures(void);
 
-void c_init() { init_textures(); }
+void c_init() {
+  SDL_SetRelativeMouseMode(1);
+  init_textures();
+}
 
 void c_deinit() { deinit_textures(); }
 
