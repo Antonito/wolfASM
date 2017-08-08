@@ -8,13 +8,13 @@
 
         ;; wolfasm symbols
         extern game_player, map, map_width, wolfasm_put_pixel,  \
-        window_width, window_height
+        window_width, window_height, wolfasm_texture
 
         ;; C function TODO: rm
-        extern wolfasm_raycast_pix_crwapper
+        extern wolfasm_raycast_pix_crwapper, _get_color
 
         ;; LibC functions
-        extern _sqrt
+        extern _sqrt, _floor
 
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
@@ -218,7 +218,7 @@ wolfasm_raycast:
         ;; Calculate distance projected on camera direction
 .compute_wall_distance:
         cmp       dl, 0
-        push      rdx                   ;; Save side for later
+        mov       [rel side], edx
         jne       .compute_wall_distance_y
 .compute_wall_distance_x:
         mov       eax, [rel step_x]
@@ -249,11 +249,13 @@ wolfasm_raycast:
 
         ;; Calculate line to draw
 .compute_line_height:
+        movsd     [rel perpWallDist], xmm1
         mov       rax, [rel window_height]
         cvtsi2sd  xmm0, rax
         divsd     xmm0, xmm1
         ;; Convert result to integer
-        cvttsd2si esi, xmm0  ;; line_height is r8
+        cvttsd2si esi, xmm0  ;; line_height is esi
+        mov       [rel line_height], esi
 
         ;; Compute line's limits
 .compute_limits:
@@ -278,9 +280,8 @@ wolfasm_raycast:
         cmp       esi, [rel window_height]
         cmovge    esi, r8d
 
-        ;; Determine wall color
-        ;; TODO: Find a cleaner / faster way to do it
-.compute_color:
+        ;; Determine texture to print
+.compute_texture_coordinate:
         ;; Get index
         push      rcx   ;; Save draw_start
         push      rsi   ;; Save draw_end
@@ -294,46 +295,73 @@ wolfasm_raycast:
         ;; map[mapY * map_width + mapX]
         lea       rax, [rel map]
         mov       byte dl, [rax + rcx]
+        dec       dl      ;; Decrement so texture[0] can be used
+        mov       dword [rel tex_num], 0
+        mov       byte [rel tex_num], dl
 
-.compute_color_red:
-        cmp       byte dl, 1
-        jne       .compute_color_green
-        mov       eax, 0xC81543 ;; Red color
-        jmp       .check_shadow_color
+        movsd     xmm0, [rel perpWallDist]
+        cmp       byte [rel side], 1
+        je        .compute_texture_side_1
+.compute_texture_side_0:
+        movsd     xmm1, [rel ray_pos_y]
+        movsd     xmm2, [rel ray_dir_y]
+        mulsd     xmm0, xmm2  ;; perp_wall_dist * ray_dir_y
+        addsd     xmm1, xmm0  ;; ray_pos_y + perp_wall_dist * ray_dir_y
+        jmp       .compute_texture_wall_x_floor
 
-.compute_color_green:
-        cmp       byte dl, 2
-        jne       .compute_color_blue
-        mov       eax, 0xA8E4B1 ;; Green color
-        jmp       .check_shadow_color
+.compute_texture_side_1:
+        movsd     xmm1, [rel ray_pos_x]
+        movsd     xmm2, [rel ray_dir_x]
+        mulsd     xmm0, xmm2  ;; perp_wall_dist * ray_dir_x
+        addsd     xmm1, xmm0  ;; ray_pos_x + perp_wall_dist * ray_dir_x
 
-.compute_color_blue:
-        cmp       byte dl, 3
-        jne       .compute_color_white
-        mov       eax, 0x4AA3BA ;; Blue color
-        jmp       .check_shadow_color
+.compute_texture_wall_x_floor:
+        movsd     xmm0, xmm1
+        call      _floor
+        subsd     xmm1, xmm0   ;; xmm1 -= floor(xmm1)
 
-.compute_color_white:
-        cmp       byte dl, 4
-        jne       .compute_color_default
-        mov       eax, 0xFFE9EC ;; White color
-        jmp       .check_shadow_color
+.compute_texture_x_coord:
+        mov       rax, 64      ;; texWidth
+        cvtsi2sd  xmm0, rax
+        mulsd     xmm0, xmm1   ;; xmm0 = (xmm1 * 64.0)
+        cvttsd2si rax, xmm0    ;; cast to integer
 
-.compute_color_default:
-        mov       eax, 0xF1E694 ;; Yellow color
+        cmp       byte [rel side], 1
+        je        .compute_texture_x_coord_1
 
-        ;; Simulate shadow
-.check_shadow_color:
-        pop       rsi      ;; Restore draw_end
-        pop       rcx;     ;; Restore draw_start
-        pop       rdx      ;; Get back 'side'
-        cmp       byte dl, 1
-        jne       .draw_scene_pre
-        shr       eax, 1    ;; color / 2
+.compute_texture_x_coord_0:
+        movsd     xmm0, [rel ray_dir_x]
+        pxor      xmm1, xmm1
+        ucomisd   xmm0, xmm1
+        jbe       .compute_texture_x_coord_1
+
+        mov       rsi, 64
+        sub       rsi, rax
+        dec       rsi
+        mov       rax, rsi
+        jmp       .draw_scene_pre
+
+.compute_texture_x_coord_1:
+        movsd     xmm0, [rel ray_dir_y]
+        pxor      xmm1, xmm1
+        ucomisd   xmm0, xmm1
+        jge       .draw_scene_pre
+
+        mov       rsi, 64
+        sub       rsi, rax
+        dec       rsi
+        mov       rax, rsi
+        jmp       .draw_scene_pre
 
         ;; TODO: Optimize
         ;; Draw line to the screen
 .draw_scene_pre:
+        pop       rsi      ;; Restore draw_end
+        pop       rcx;     ;; Restore draw_start
+        mov       [rel tex_x], eax
+        mov       [rel draw_start], ecx
+        mov       [rel draw_end], esi
+
         ;; Swap draw_start and draw_end for conveniance
         ;; (simpler to call wolfasm_put_pixel)
         mov       rdx, rsi
@@ -347,6 +375,42 @@ wolfasm_raycast:
         cmp       rsi, rcx
         je        .draw_scene_end
 
+        mov       eax, esi
+        shl       eax, 8    ;; y * 256
+        mov       r8d, [rel window_height]
+        shl       r8d, 7     ;; window_height * 128
+        mov       r9d, [rel line_height]
+        shl       r9d, 7     ;; line_height * 128
+
+        ;; y * 256 - window_height * 128 + line_height * 128
+        sub       eax, r8d
+        add       eax, r9d
+
+        ;; tex_y = ((eax * texHeight) / line_height) / 256
+        mov       edx, 64 ;; texHeight
+        mul       edx
+        mov       r10d, [rel line_height]
+        div       r10d
+        shr       eax, 8
+
+        ;; tex_y * texHieght + tex_x
+        mov       edx, 64
+        mul       edx
+        add       eax, [rel tex_x]
+
+        ;; Get texture from array
+        mov       dword r8d, [rel tex_num]
+        shl       r8, 12      ;; * 4096 == * texWidth * texHeight
+        lea       edx, [rel wolfasm_texture]
+        lea       rdx, [rdx + r8 * 4]
+        mov       rdx, [rdx + rax * 4]
+
+        cmp       byte [rel side], 0
+        shr       edx, 1
+        and       edx, 0x7F7F7F
+        jne       .draw_scene_print
+
+.draw_scene_print:
         sub       rsp, 8
         push      rsi     ;; Save current_state
         sub       rsp, 8
@@ -391,3 +455,10 @@ map_x:          resd  1
 map_y:          resd  1
 step_x:         resd  1
 step_y:         resd  1
+side:           resd  1
+perpWallDist:   reso  1
+tex_x:          resd  1
+tex_num:        resd  1
+draw_end:       resd  1
+draw_start:     resd  1
+line_height:     resd  1

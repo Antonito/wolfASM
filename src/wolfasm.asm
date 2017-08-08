@@ -9,7 +9,7 @@
         window_width, window_height
 
         ;; TODO: rm
-        extern _init_gui, _deinit_gui
+        extern _c_init, _c_deinit
 
         ;; SDL functions
         extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, \
@@ -60,7 +60,9 @@ wolfasm:
         ;; TODO: Load map here
 
         ;; Starts the game loop
+        call  _c_init   ;; TODO: rm
         call  game_loop
+        call  _c_deinit ;; TODO: rm
 
         ;; Clean SDL_ttf
         call  wolfasm_gui_deinit
