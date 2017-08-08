@@ -117,14 +117,14 @@ wolfasm_deinit_texture:
         ret
 
         section .rodata
-wolfasm_texture_0:        dd  "./resources/img/stone.png", 0x00
-wolfasm_texture_1:        dd  "./resources/img/stonebrick_mossy.png", 0x00
-wolfasm_texture_2:        dd  "./resources/img/log_jungle.png", 0x00
-wolfasm_texture_3:        dd  "./resources/img/brick.png", 0x00
-wolfasm_texture_4:        dd  "./resources/img/stonebrick_cracked.png", 0x00
-wolfasm_texture_5:        dd  "./resources/img/end_stone.png", 0x00
-wolfasm_texture_6:        dd  "./resources/img/planks_oak.png", 0x00
-wolfasm_texture_7:        dd  "./resources/img/sand.png", 0x00
+wolfasm_texture_0:        dd  "./resources/textures/stone.png", 0x00
+wolfasm_texture_1:        dd  "./resources/textures/stonebrick_mossy.png", 0x00
+wolfasm_texture_2:        dd  "./resources/textures/log_jungle.png", 0x00
+wolfasm_texture_3:        dd  "./resources/textures/brick.png", 0x00
+wolfasm_texture_4:        dd  "./resources/textures/stonebrick_cracked.png", 0x00
+wolfasm_texture_5:        dd  "./resources/textures/end_stone.png", 0x00
+wolfasm_texture_6:        dd  "./resources/textures/planks_oak.png", 0x00
+wolfasm_texture_7:        dd  "./resources/textures/sand.png", 0x00
 wolfasm_texture_name:     dq  wolfasm_texture_0, \
                               wolfasm_texture_1, \
                               wolfasm_texture_2, \

@@ -13,7 +13,7 @@
 
         ;; SDL functions
         extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, \
-        _SDL_GetWindowSurface, _SDL_GetRenderer
+        _SDL_GetWindowSurface, _SDL_GetRenderer, _SDL_SetRelativeMouseMode
 
         ;; Syscalls
         extern _exit
@@ -54,6 +54,10 @@ wolfasm:
         cmp   rax, 0x0
         je    .exit_fail
         mov   qword [rel window_surface], rax
+
+        ;; Initialize mouse support
+        mov   rdi, 1
+        call  _SDL_SetRelativeMouseMode
 
         ;; Initialize SDL_ttf
         call  wolfasm_gui_init
