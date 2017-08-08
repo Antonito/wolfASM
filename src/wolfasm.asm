@@ -21,7 +21,8 @@
 
         ;; wolfasm functions
         extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit, \
-        wolfasm_init_texture, wolfasm_deinit_texture
+        wolfasm_init_texture, wolfasm_deinit_texture,           \
+        wolfasm_init_audio, wolfasm_deinit_audio
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -72,6 +73,9 @@ wolfasm:
         ;; Initialize SDL_ttf
         call  wolfasm_gui_init
 
+        ;; Initialize SDL_Mixer
+        call  wolfasm_init_audio
+
         ;; TODO: Load map here
 
         ;; Starts the game loop
@@ -79,6 +83,9 @@ wolfasm:
         call  _c_init   ;; TODO: rm
         call  game_loop
         call  _c_deinit ;; TODO: rm
+
+        ;; Clean sounds
+        call  wolfasm_deinit_audio
 
         ;; Clean SDL_ttf
         call  wolfasm_gui_deinit

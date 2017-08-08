@@ -21,69 +21,9 @@ void init_sprites(void);
 void deinit_sprites(void);
 void display_sprites_cwrapper(void);
 
-void init_sound(void);
-void deinit_sound(void);
+void c_init() { init_sprites(); }
 
-void c_init() {
-  init_sprites();
-  init_sound();
-}
-
-void c_deinit() {
-  deinit_sprites();
-  deinit_sound();
-}
-
-//
-// Sound
-//
-static Mix_Chunk *wolfasm_sounds[NB_WOLFASM_SOUNDS];
-
-static char const *wolfasm_sound_file[] = {"./resources/sounds/pistol.wav"};
-
-_Static_assert(sizeof(wolfasm_sound_file) / sizeof(wolfasm_sound_file[0]) ==
-                   NB_WOLFASM_SOUNDS,
-               "Invalid number of sounds");
-
-void play_sound(enum wolfasm_sounds sound) {
-  assert(sound >= SOUND_PISTOL && sound < NB_WOLFASM_SOUNDS);
-  int32_t rc = Mix_PlayChannel(SOUND_CHANNEL, wolfasm_sounds[sound], 0);
-
-  if (rc == -1) {
-    printf("%s\n", SDL_GetError());
-    exit(1);
-  }
-}
-
-void init_sound(void) {
-  printf("Loading sounds..\n");
-  int32_t rc = Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-
-  if (rc == -1) {
-    goto err;
-  }
-
-  for (int32_t i = 0; i < NB_WOLFASM_SOUNDS; ++i) {
-    wolfasm_sounds[i] = Mix_LoadWAV(wolfasm_sound_file[i]);
-    if (!wolfasm_sounds[i]) {
-      goto err;
-    }
-  }
-
-  printf("Sounds loaded\n");
-  return;
-err:
-  printf("%s\n", SDL_GetError());
-  exit(1);
-}
-
-void deinit_sound(void) {
-  for (int32_t i = 0; i < NB_WOLFASM_SOUNDS; ++i) {
-    Mix_FreeChunk(wolfasm_sounds[i]);
-    wolfasm_sounds[i] = NULL;
-  }
-  Mix_CloseAudio();
-}
+void c_deinit() { deinit_sprites(); }
 
 //
 // Sprites
