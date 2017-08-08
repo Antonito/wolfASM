@@ -13,7 +13,8 @@
 
         ;; SDL functions
         extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, \
-        _SDL_GetWindowSurface, _SDL_GetRenderer, _SDL_SetRelativeMouseMode
+        _SDL_GetWindowSurface, _SDL_GetRenderer, _SDL_SetRelativeMouseMode, \
+        _SDL_GetRenderer
 
         ;; Syscalls
         extern _exit
@@ -54,6 +55,15 @@ wolfasm:
         cmp   rax, 0x0
         je    .exit_fail
         mov   qword [rel window_surface], rax
+
+        ;; Get window's renderer
+        mov   rdi, [rel window_ptr]
+        call  _SDL_GetRenderer
+
+        ;; Check that is non NULL
+        cmp   rax, 0x0
+        je    .exit_fail
+        mov   qword [rel window_renderer], rax
 
         ;; Initialize mouse support
         mov   rdi, 1
@@ -101,6 +111,7 @@ window_width    dq WIN_WIDTH
 window_height   dq WIN_HEIGHT
 window_ptr      dq 1
 window_surface  dq 1
+window_renderer dq 1
 
         section .rodata
 window_name     db "WolfASM - bache_a", 0x00

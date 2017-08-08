@@ -45,5 +45,15 @@ extern uint8_t const map[] __asm__("map");
 // Window informations
 extern SDL_Window *window_ptr __asm__("window_ptr");
 extern SDL_Surface *window_surface __asm__("window_surface");
+extern SDL_Renderer *window_renderer __asm__("window_renderer");
 extern int32_t window_width __asm__("window_width");
 extern int32_t window_height __asm__("window_height");
+
+//
+// TODO: RM
+// SOUND
+//
+enum wolfasm_audio_channel { SOUND_CHANNEL = 0 };
+
+enum wolfasm_sounds { SOUND_PISTOL = 0, NB_WOLFASM_SOUNDS };
+void play_sound(enum wolfasm_sounds sound);

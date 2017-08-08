@@ -57,8 +57,38 @@ wolfasm_init_texture:
         lea       rsi, [rel wolfasm_texture_surface]
         mov       [rsi + rcx * 8], r8
 
-        ;; TODO: Check size of surface
+        ;; Check that size if correct
+        mov       r9d, [r8 + 16]  ;; width
+        mov       r10d, [r8 + 20]  ;; height
 
+        ;; Check width == height
+        cmp       r9d, r10d
+        jne       .texture_load_err
+
+        ;; Check width == height == wolfasm_texture_size
+        cmp       r9d, [rel wolfasm_texture_size]
+        jne       .texture_load_err
+
+        ;; Load buffer
+        mov       r8, [r8 + 32]
+        xor       rdi, rdi
+        mov       esi, [rel wolfasm_texture_full_size]
+
+.map_texture_loop:
+        cmp       rdi, rsi
+        je        .map_texture_loop_end
+
+        mov       edx, [r8 + rdi * 4]   ;; Current pixel
+        mov       r10, rcx
+        shl       r10, 12
+        lea       r9d, [rel wolfasm_texture]
+        lea       r9, [r9 + r10 * 4]
+        mov       [r9 + rdi * 4], edx
+
+        inc       rdi
+        jmp       .map_texture_loop
+
+.map_texture_loop_end:
         inc       rcx
         jmp       .loop
 
@@ -68,11 +98,11 @@ wolfasm_init_texture:
         mov        rdi, rax
         call       _puts
 
+.exit_err:
         mov       rdi, 1
         call      _exit
 
 .end_loop:
-
         mov       rsp, rbp
         pop       rbp
         ret
@@ -137,6 +167,7 @@ wolfasm_texture_name:     dq  wolfasm_texture_0, \
         section .data
 wolfasm_texture_nb:       dd    TEXTURE_NB
 wolfasm_texture_size:     dd    TEXTURE_SIZE
+wolfasm_texture_full_size:dd    TEXTURE_SIZE * TEXTURE_SIZE
 
         section .bss
 wolfasm_texture_surface:  resq  TEXTURE_NB

@@ -5,15 +5,19 @@
         global wolfasm_display, wolfasm_put_pixel
 
         ;; SDL functions
-        extern _SDL_UpdateWindowSurface, _SDL_LockSurface,   \
-        _SDL_UnlockSurface, _SDL_RenderPresent
+        extern _SDL_LockSurface, _SDL_RenderCopy,             \
+        _SDL_UnlockSurface, _SDL_RenderPresent,               \
+        _SDL_LockTexture, _SDL_UnlockTexture
 
         ;; wolfasm symbols
         extern window_surface, window_ptr, window_renderer,   \
-        window_width, window_height
+        window_width, window_height, window_texture
 
         ;; wolfasm functions
-        extern wolfasm_raycast, wolfasm_display_gui
+        extern wolfasm_raycast, wolfasm_display_gui, wolfasm_display_sprites
+
+        ;; LibC functions
+        extern _memcpy
 
         section .text
 ;; This functions handle the graphic part of the game
@@ -21,16 +25,43 @@ wolfasm_display:
         push  rbp
         mov   rbp, rsp
 
+.raycasting:
         ;; Process graphics
         call  wolfasm_set_sky
         call  wolfasm_set_ground
         call  wolfasm_raycast
 
-        call  wolfasm_display_gui
+.pre_blit:
+        ;; Pre blit to the screen
+        mov     rdi, [rel window_texture]
+        xor     rsi, rsi
+        lea     rdx, [rel texture_arr]
+        lea     rcx, [rel texture_pitch]
+        call    _SDL_LockTexture
 
-        ;; Display graphics
-        mov   rdi, [rel window_ptr]
-        call  _SDL_UpdateWindowSurface
+        ;; Update pixels
+        mov     rdi, [rel texture_arr]
+        lea     rsi, [rel window_pixels]
+        mov     edx, [rel window_pixels_size]
+        call    _memcpy
+
+        mov     rdi, [rel window_texture]
+        call    _SDL_UnlockTexture
+
+        ;; Update the screen
+        mov     rdi, [rel window_renderer]
+        mov     rsi, [rel window_texture]
+        xor     rdx, rdx
+        xor     rcx, rcx
+        call    _SDL_RenderCopy
+
+.sprites_and_gui:
+        call    wolfasm_display_sprites
+        call    wolfasm_display_gui
+
+.blit:
+        mov     rdi, [rel window_renderer]
+        call    _SDL_RenderPresent
 
         mov   rsp, rbp
         pop   rbp
@@ -40,18 +71,6 @@ wolfasm_display:
 wolfasm_put_pixel:
         push  rbp
         mov   rbp, rsp
-
-        ;; Save arguments
-        push  rdi
-        push  rsi
-        push  rdx
-        mov   rdi, [rel window_surface]
-        sub   rsp, 8
-        call  _SDL_LockSurface
-        add   rsp, 8
-        pop   rdx
-        pop   rsi
-        pop   rdi
 
         ;; Save color
         mov   r9, rdx
@@ -65,13 +84,9 @@ wolfasm_put_pixel:
         mov   ecx, eax
 
         ;; Store pixel
-        mov   r8, [rel window_surface]
-        mov   r8, [r8 + 32]
+        lea   r8, [rel window_pixels]
         mov   rax, r9
         mov   dword [r8 + rcx], eax
-
-        mov   rdi, [rel window_surface]
-        call  _SDL_UnlockSurface
 
         mov   rsp, rbp
         pop   rbp
@@ -154,3 +169,11 @@ wolfasm_set_ground:
         mov   rsp, rbp
         pop   rbp
         ret
+
+        section .rodata
+window_pixels_size: dd    WIN_WIDTH * WIN_HEIGHT * 4
+
+        section .bss
+texture_arr:        resq  1
+texture_pitch:      resd  1
+window_pixels:      resd  WIN_WIDTH * WIN_HEIGHT

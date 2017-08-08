@@ -60,7 +60,11 @@ void wolfasm_events_mouse_up_cwrapper(SDL_Event const *events) {
 void wolfasm_events_mouse_down_cwrapper(SDL_Event const *events) {
   assert(events == &game_events);
   assert(events->type == SDL_MOUSEBUTTONDOWN);
+
   switch (events->button.button) {
+  case SDL_BUTTON_LEFT:
+    play_sound(SOUND_PISTOL); // TODO: change to play weapon's sound
+    break;
   default:
     break;
   }

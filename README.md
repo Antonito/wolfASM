@@ -8,3 +8,10 @@ I am building it again, but this time in x86_64 assembly.
 
 ![WolfASM ScreenShot](http://i.imgur.com/JDBQaoV.png "WolfASM ScreenShot")
  _Current progress_
+
+## Dependencies
+
+* SDL2
+* SDL2_TTF
+* SDL2_Image
+* SDL2_Mixer
