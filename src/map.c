@@ -6,7 +6,7 @@
 
 extern int32_t const map_width;
 extern int32_t const map_height;
-extern uint8_t const map[];
+extern uint32_t const map[];
 
 #if MAP_NUMBER == 1
 
@@ -14,7 +14,7 @@ extern uint8_t const map[];
 #define MAP_HEIGHT (7)
 
 // clang-format off
-uint8_t const map[] __asm__("map") = {
+uint32_t const map[] __asm__("map") = {
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 0, 0, 0, 0, 0, 0, 1,
   1, 0, 1, 0, 0, 1, 0, 1,
@@ -31,7 +31,7 @@ uint8_t const map[] __asm__("map") = {
 #define MAP_HEIGHT (24)
 
 // clang-format off
-uint8_t const map[] __asm__("map") = {
+uint32_t const map[] __asm__("map") = {
   4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7,
   4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7,
   4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,

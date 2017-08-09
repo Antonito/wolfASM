@@ -207,7 +207,7 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX] > 0
         lea       rax, [rel map]
-        mov       byte cl, [rax + rcx]
+        mov       byte cl, [rax + rcx * 4]
         cmp       byte cl, 0
         ;; We hit a hall, stop iterating
         jne       .compute_wall_distance
@@ -294,7 +294,7 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX]
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx]
+        mov       byte dl, [rax + rcx * 4]
         dec       dl      ;; Decrement so texture[0] can be used
         mov       dword [rel tex_num], 0
         mov       byte [rel tex_num], dl

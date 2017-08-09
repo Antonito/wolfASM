@@ -46,7 +46,7 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx]
+        mov       byte dl, [rax + rcx * 4]
 
         cmp       dl, 0
         jne       .update_y
@@ -81,7 +81,7 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx]
+        mov       byte dl, [rax + rcx * 4]
 
         cmp       dl, 0
         jne       .end
