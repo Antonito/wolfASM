@@ -35,7 +35,7 @@ wolfasm_init_weapon:
         ;; Initialize player's data
         mov       edi, WOLFASM_PISTOL
         call      wolfasm_change_weapon
-        
+
 .end:
         mov       rsp, rbp
         pop       rbp
@@ -101,14 +101,20 @@ istruc wolfasm_weapon_s
       at wolfasm_weapon_s.sprite,   dq    0
       at wolfasm_weapon_s.sound,    dd    SOUND_PISTOL
       at wolfasm_weapon_s.type,     dd    WOLFASM_PISTOL
+      at wolfasm_weapon_s.ammo,     dw    WOLFASM_PISTOL_MAX_AMMO / 2
+      at wolfasm_weapon_s.max_ammo, dw    WOLFASM_PISTOL_MAX_AMMO
 iend
 istruc wolfasm_weapon_s
       at wolfasm_weapon_s.sprite,   dq    0
       at wolfasm_weapon_s.sound,    dd    SOUND_SHOTGUN
       at wolfasm_weapon_s.type,     dd    WOLFASM_SHOTGUN
+      at wolfasm_weapon_s.ammo,     dw    WOLFASM_SHOTGUN_MAX_AMMO / 2
+      at wolfasm_weapon_s.max_ammo, dw    WOLFASM_SHOTGUN_MAX_AMMO
 iend
 istruc wolfasm_weapon_s
       at wolfasm_weapon_s.sprite,   dq    0
       at wolfasm_weapon_s.sound,    dd    SOUND_BARREL
       at wolfasm_weapon_s.type,     dd    WOLFASM_BARREL
+      at wolfasm_weapon_s.ammo,     dw    WOLFASM_BARREL_MAX_AMMO / 2
+      at wolfasm_weapon_s.max_ammo, dw    WOLFASM_BARREL_MAX_AMMO
 iend

@@ -149,9 +149,11 @@ wolfasm_sound_rb:     db  "rb", 0x00
 wolfasm_sound_file_0: db  "./resources/sounds/pistol.wav", 0x00
 wolfasm_sound_file_1: db  "./resources/sounds/shotgun.wav", 0x00
 wolfasm_sound_file_2: db  "./resources/sounds/barrel.wav", 0x00
+wolfasm_sound_file_3: db  "./resources/sounds/no_ammo.wav", 0x00
 wolfasm_sound_file:   dq  wolfasm_sound_file_0,   \
                           wolfasm_sound_file_1,   \
-                          wolfasm_sound_file_2
+                          wolfasm_sound_file_2,   \
+                          wolfasm_sound_file_3
 
         section .bss
 wolfasm_sounds: resq  NB_WOLFASM_SOUNDS

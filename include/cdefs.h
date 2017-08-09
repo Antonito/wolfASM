@@ -63,6 +63,7 @@ enum wolfasm_sounds {
   SOUND_PISTOL = 0,
   SOUND_SHOTGUN,
   SOUND_BARREL,
+  SOUND_NO_AMMO,
   NB_WOLFASM_SOUNDS
 };
 
@@ -102,4 +103,6 @@ struct wolfasm_weapon_s {
   wolfasm_sprite_t *sprite;
   enum wolfasm_sounds sound;
   enum wolfasm_weapon_type type;
+  int16_t ammo;
+  int16_t const max_ammo;
 };

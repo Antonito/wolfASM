@@ -84,7 +84,15 @@ void wolfasm_events_mouse_down_cwrapper(SDL_Event const *events) {
   switch (events->button.button) {
   case SDL_BUTTON_LEFT:
     if (game_player.weapon->sprite->trigger == 0) {
-      wolfasm_play_sound(game_player.weapon->sound);
+
+      // Check that enough ammo
+      if (game_player.weapon->ammo) {
+        wolfasm_play_sound(game_player.weapon->sound);
+        --game_player.weapon->ammo;
+      } else {
+        wolfasm_play_sound(SOUND_NO_AMMO);
+      }
+
       game_player.weapon->sprite->trigger = 1;
     }
     break;
