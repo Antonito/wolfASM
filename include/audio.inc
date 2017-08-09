@@ -5,4 +5,6 @@
 
 ;; Define sounds here
 %define SOUND_PISTOL      0
-%define NB_WOLFASM_SOUNDS 1
+%define SOUND_SHOTGUN     1
+%define SOUND_BARREL      2
+%define NB_WOLFASM_SOUNDS 3

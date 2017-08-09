@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_Mixer.h>
 #include <stdint.h>
 
 // ASM Bindings
@@ -23,9 +24,14 @@ void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) __asm__(
 void wolfasm_event_window_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_event_window_cwrapper");
 
+// Weapons
+void *wolfasm_change_weapon(int32_t weapon) __asm__("wolfasm_change_weapon");
+
 // Handle game events
 extern SDL_Event game_events;
 SDL_Event game_events __asm__("game_events");
+
+typedef struct wolfasm_weapon_s wolfasm_weapon_t;
 
 // Player informations
 struct wolfasm_player {
@@ -34,6 +40,7 @@ struct wolfasm_player {
   double plane_x, plane_y;
   double movement_speed;
   double rotation_speed;
+  wolfasm_weapon_t *weapon;
 };
 extern struct wolfasm_player game_player __asm__("game_player");
 
@@ -50,10 +57,48 @@ extern int32_t window_width __asm__("window_width");
 extern int32_t window_height __asm__("window_height");
 
 //
-// TODO: RM
-// SOUND
+// Audio
 //
-enum wolfasm_audio_channel { SOUND_CHANNEL = 0 };
+enum wolfasm_sounds {
+  SOUND_PISTOL = 0,
+  SOUND_SHOTGUN,
+  SOUND_BARREL,
+  NB_WOLFASM_SOUNDS
+};
 
-enum wolfasm_sounds { SOUND_PISTOL = 0, NB_WOLFASM_SOUNDS };
-void play_sound(enum wolfasm_sounds sound);
+//
+// TODO: rm
+// Sprites
+//
+typedef struct wolfasm_sprite {
+  SDL_Texture *texture;
+  SDL_Rect *sprite;
+  int32_t width;
+  int32_t height;
+  uint16_t nb_sprites;
+  uint16_t current_anim;
+  int32_t trigger;
+} wolfasm_sprite_t;
+enum wolfasm_sprites {
+  SPRITE_PISTOL = 0,
+  SPRITE_SHOTGUN,
+  SPRITE_BARREL,
+  NB_WOLFASM_SPRITES
+};
+extern wolfasm_sprite_t wolfasm_sprite[NB_WOLFASM_SPRITES];
+
+//
+// Weapons
+//
+enum wolfasm_weapon_type {
+  WOLFASM_PISTOL = 0,
+  WOLFASM_SHOTGUN,
+  WOLFASM_BARREL,
+  NB_WOLFASM_WEAPON
+};
+
+struct wolfasm_weapon_s {
+  wolfasm_sprite_t *sprite;
+  enum wolfasm_sounds sound;
+  enum wolfasm_weapon_type type;
+};

@@ -3,16 +3,11 @@
 
 #include "cdefs.h"
 #include <SDL2/SDL_Image.h>
-#include <SDL2/SDL_Mixer.h>
 #include <assert.h>
 
-enum wolfasm_weapon_type { WOLFASM_PISTOL };
-
-typedef struct wolfasm_weapon_s {
-  enum wolfasm_weapon_type type;
-  Mix_Chunk *sound;
-} wolfasm_weapon_t;
-
+//
+// Prototypes
+//
 void c_deinit(void);
 void c_init(void);
 void init_textures(void);
@@ -21,6 +16,8 @@ void init_sprites(void);
 void deinit_sprites(void);
 void display_sprites_cwrapper(void);
 
+void init_weapons(void);
+
 void c_init() { init_sprites(); }
 
 void c_deinit() { deinit_sprites(); }
@@ -28,24 +25,16 @@ void c_deinit() { deinit_sprites(); }
 //
 // Sprites
 //
-typedef struct wolfasm_sprite {
-  SDL_Texture *texture;
-  SDL_Rect *sprite;
-  int32_t width;
-  int32_t height;
-  uint32_t nb_sprites;
-} wolfasm_sprite_t;
-
-enum wolfasm_sprites { SPRITE_PISTOL = 0, NB_WOLFASM_SPRITES };
-static char const *wolfasm_sprite_file[] = {"./resources/sprites/weapons.png"};
+static char const *wolfasm_sprite_file[] = {"./resources/sprites/pistol.png",
+                                            "./resources/sprites/shotgun.png",
+                                            "./resources/sprites/barell.png"};
 _Static_assert(sizeof(wolfasm_sprite_file) / sizeof(wolfasm_sprite_file[0]) ==
                    NB_WOLFASM_SPRITES,
                "Invalid sprites number");
-wolfasm_sprite_t wolfasm_sprite[NB_WOLFASM_SPRITES];
 
-#define PISTOL_SPRITES_ANIM 5
-SDL_Rect pistol_sprite[PISTOL_SPRITES_ANIM];
+wolfasm_sprite_t wolfasm_sprite[NB_WOLFASM_SPRITES] __asm__("wolfasm_sprite");
 
+extern SDL_Texture *window_texture;
 SDL_Texture *window_texture __asm__("window_texture");
 
 void init_sprites(void) {
@@ -59,6 +48,7 @@ void init_sprites(void) {
   }
 
   for (int32_t i = 0; i < NB_WOLFASM_SPRITES; ++i) {
+    memset(&wolfasm_sprite[i], 0, sizeof(wolfasm_sprite[i]));
     SDL_Surface *surface = IMG_Load(wolfasm_sprite_file[i]);
     if (!surface) {
       goto err;
@@ -75,6 +65,7 @@ void init_sprites(void) {
   }
   printf("Sprites loaded..\n");
 
+  // Pistol
   wolfasm_sprite[SPRITE_PISTOL].height = 62 * 4;
   wolfasm_sprite[SPRITE_PISTOL].width = 62 * 4;
   wolfasm_sprite[SPRITE_PISTOL].nb_sprites = 5;
@@ -88,29 +79,93 @@ void init_sprites(void) {
   SDL_Rect *sprite = wolfasm_sprite[SPRITE_PISTOL].sprite;
 
   sprite[0].x = 0;
-  sprite[0].y = 222;
-  sprite[0].w = 62;
+  sprite[0].y = 42;
+  sprite[0].w = 60;
   sprite[0].h = 62;
 
-  sprite[1].x = 62;
-  sprite[1].y = 202;
+  sprite[1].x = 60;
+  sprite[1].y = 22;
   sprite[1].w = 82;
   sprite[1].h = 82;
 
-  sprite[2].x = 144;
-  sprite[2].y = 203;
+  sprite[2].x = 142;
+  sprite[2].y = 23;
   sprite[2].w = 70;
   sprite[2].h = 81;
 
-  sprite[3].x = 214;
-  sprite[3].y = 203;
+  sprite[3].x = 212;
+  sprite[3].y = 23;
   sprite[3].w = 64;
-  sprite[3].h = 80;
+  sprite[3].h = 81;
 
-  sprite[4].x = 278;
-  sprite[4].y = 181;
-  sprite[4].w = 81;
+  sprite[4].x = 276;
+  sprite[4].y = 1;
+  sprite[4].w = 80;
   sprite[4].h = 103;
+
+  // Shotgun
+  wolfasm_sprite[SPRITE_SHOTGUN].height = 62 * 4;
+  wolfasm_sprite[SPRITE_SHOTGUN].width = 62 * 4;
+  wolfasm_sprite[SPRITE_SHOTGUN].nb_sprites = 4;
+  wolfasm_sprite[SPRITE_SHOTGUN].sprite =
+      malloc(sizeof(*wolfasm_sprite[SPRITE_SHOTGUN].sprite) *
+             wolfasm_sprite[SPRITE_SHOTGUN].nb_sprites);
+  if (!wolfasm_sprite[SPRITE_SHOTGUN].sprite) {
+    goto err;
+  }
+  sprite = wolfasm_sprite[SPRITE_SHOTGUN].sprite;
+
+  sprite[0].x = 0;
+  sprite[0].y = 91;
+  sprite[0].w = 79;
+  sprite[0].h = 60;
+
+  sprite[1].x = 82;
+  sprite[1].y = 30;
+  sprite[1].w = 119;
+  sprite[1].h = 121;
+
+  sprite[2].x = 204;
+  sprite[2].y = 0;
+  sprite[2].w = 87;
+  sprite[2].h = 151;
+
+  sprite[3].x = 294;
+  sprite[3].y = 20;
+  sprite[3].w = 113;
+  sprite[3].h = 130;
+
+  // Barrel
+  wolfasm_sprite[SPRITE_BARREL].height = 62 * 4;
+  wolfasm_sprite[SPRITE_BARREL].width = 62 * 4;
+  wolfasm_sprite[SPRITE_BARREL].nb_sprites = 4;
+  wolfasm_sprite[SPRITE_BARREL].sprite =
+      malloc(sizeof(*wolfasm_sprite[SPRITE_BARREL].sprite) *
+             wolfasm_sprite[SPRITE_BARREL].nb_sprites);
+  if (!wolfasm_sprite[SPRITE_BARREL].sprite) {
+    goto err;
+  }
+  sprite = wolfasm_sprite[SPRITE_BARREL].sprite;
+
+  sprite[0].x = 0;
+  sprite[0].y = 75;
+  sprite[0].w = 59;
+  sprite[0].h = 55;
+
+  sprite[1].x = 62;
+  sprite[1].y = 27;
+  sprite[1].w = 83;
+  sprite[1].h = 102;
+
+  sprite[2].x = 148;
+  sprite[2].y = 0;
+  sprite[2].w = 121;
+  sprite[2].h = 130;
+
+  sprite[3].x = 272;
+  sprite[3].y = 50;
+  sprite[3].w = 81;
+  sprite[3].h = 80;
 
   return;
 err:
@@ -120,9 +175,9 @@ err:
 
 void deinit_sprites(void) {
   for (int32_t i = 0; i < NB_WOLFASM_SPRITES; ++i) {
-    SDL_DestroyTexture(wolfasm_sprite[SPRITE_PISTOL].texture);
-    free(wolfasm_sprite[SPRITE_PISTOL].sprite);
-    wolfasm_sprite[SPRITE_PISTOL].sprite = NULL;
+    SDL_DestroyTexture(wolfasm_sprite[i].texture);
+    free(wolfasm_sprite[i].sprite);
+    wolfasm_sprite[i].sprite = NULL;
   }
 }
 
@@ -133,9 +188,20 @@ static void render_sprite(wolfasm_sprite_t *sprite, int x, int y,
 }
 
 void display_sprites_cwrapper(void) {
-  static int32_t current_anim = 0;
+  if (!game_player.weapon) {
+    return;
+  }
+  wolfasm_sprite_t *weapon_sprite = game_player.weapon->sprite;
 
-  render_sprite(&wolfasm_sprite[0], window_width / 2 - 30 * 4,
-                window_height - wolfasm_sprite[0].height,
-                &wolfasm_sprite[0].sprite[current_anim]);
+  render_sprite(weapon_sprite, window_width / 2 - 30 * 4,
+                window_height - weapon_sprite->height,
+                &weapon_sprite->sprite[weapon_sprite->current_anim / 8]);
+
+  if (weapon_sprite->trigger) {
+    ++weapon_sprite->current_anim;
+    if (weapon_sprite->current_anim == weapon_sprite->nb_sprites * 8) {
+      weapon_sprite->current_anim = 0;
+      weapon_sprite->trigger = 0;
+    }
+  }
 }

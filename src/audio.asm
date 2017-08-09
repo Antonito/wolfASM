@@ -5,9 +5,6 @@
         global  wolfasm_init_audio, wolfasm_deinit_audio,       \
         wolfasm_play_sound
 
-        ;; TODO: rm
-        global wolfasm_sounds
-
         ;; SDL functions
         extern  _Mix_OpenAudio, _Mix_CloseAudio, _SDL_GetError, \
         _SDL_RWFromFile, _Mix_LoadWAV_RW, _Mix_FreeChunk,       \
@@ -150,7 +147,11 @@ wolfasm_sound_rb:     db  "rb", 0x00
 
 ;; Sound files
 wolfasm_sound_file_0: db  "./resources/sounds/pistol.wav", 0x00
-wolfasm_sound_file:   dq  wolfasm_sound_file_0
+wolfasm_sound_file_1: db  "./resources/sounds/shotgun.wav", 0x00
+wolfasm_sound_file_2: db  "./resources/sounds/barrel.wav", 0x00
+wolfasm_sound_file:   dq  wolfasm_sound_file_0,   \
+                          wolfasm_sound_file_1,   \
+                          wolfasm_sound_file_2
 
         section .bss
 wolfasm_sounds: resq  NB_WOLFASM_SOUNDS

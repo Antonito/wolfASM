@@ -8,6 +8,7 @@ struc wolfasm_player
   .plane_y        resq 1  ;; Double
   .movement_speed resq 1  ;; Double
   .rotation_speed resq 1  ;; Double
+  .weapon         resq 1  ;; Weapon pointer
   .size:
 endstruc
 

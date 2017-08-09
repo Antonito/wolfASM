@@ -317,4 +317,5 @@ istruc wolfasm_player
         at wolfasm_player.plane_y,        dq PLAYER_DEFAULT_PLA_Y
         at wolfasm_player.movement_speed, dq PLAYER_DEFAULT_MOV_SPEED
         at wolfasm_player.rotation_speed, dq PLAYER_DEFAULT_ROT_SPEED
+        at wolfasm_player.weapon,         dq 0x00 ;; TODO
 iend

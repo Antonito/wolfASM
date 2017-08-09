@@ -22,7 +22,8 @@
         ;; wolfasm functions
         extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit, \
         wolfasm_init_texture, wolfasm_deinit_texture,           \
-        wolfasm_init_audio, wolfasm_deinit_audio
+        wolfasm_init_audio, wolfasm_deinit_audio,               \
+        wolfasm_init_weapon
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -77,6 +78,9 @@ wolfasm:
         call  wolfasm_init_audio
 
         ;; TODO: Load map here
+
+        ;; Initialize weapons
+        call  wolfasm_init_weapon
 
         ;; Starts the game loop
         call  wolfasm_init_texture

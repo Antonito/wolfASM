@@ -41,6 +41,21 @@ void wolfasm_events_keyboard_down_cwrapper(SDL_Event const *events) {
     wolfasm_player_rotate_left();
     break;
 
+  //
+  // Change weapons
+  //
+  case SDLK_1:
+    wolfasm_change_weapon(WOLFASM_PISTOL);
+    break;
+
+  case SDLK_2:
+    wolfasm_change_weapon(WOLFASM_SHOTGUN);
+    break;
+
+  case SDLK_3:
+    wolfasm_change_weapon(WOLFASM_BARREL);
+    break;
+
   default:
     break;
   }
@@ -62,9 +77,17 @@ void wolfasm_events_mouse_down_cwrapper(SDL_Event const *events) {
   assert(events->type == SDL_MOUSEBUTTONDOWN);
   extern void wolfasm_play_sound(int) __asm__("wolfasm_play_sound");
 
+  if (!game_player.weapon) {
+    return;
+  }
+
   switch (events->button.button) {
   case SDL_BUTTON_LEFT:
-    wolfasm_play_sound(SOUND_PISTOL); // TODO: change to play weapon's sound
+    if (game_player.weapon->sprite->trigger == 0) {
+      wolfasm_play_sound(
+          game_player.weapon->sound); // TODO: change to play weapon's sound
+      game_player.weapon->sprite->trigger = 1;
+    }
     break;
   default:
     break;
