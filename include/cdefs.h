@@ -85,7 +85,8 @@ enum wolfasm_sprites {
   SPRITE_BARREL,
   NB_WOLFASM_SPRITES
 };
-extern wolfasm_sprite_t wolfasm_sprite[NB_WOLFASM_SPRITES];
+extern wolfasm_sprite_t
+    wolfasm_sprite[NB_WOLFASM_SPRITES] __asm__("wolfasm_sprite");
 
 //
 // Weapons

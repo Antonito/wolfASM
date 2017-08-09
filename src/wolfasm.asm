@@ -6,7 +6,7 @@
         section .text
         global wolfasm
         global window_ptr, window_surface, window_renderer,                 \
-        window_width, window_height
+        window_width, window_height, window_texture
 
         ;; TODO: rm
         extern _c_init, _c_deinit
@@ -14,7 +14,7 @@
         ;; SDL functions
         extern _SDL_Init, _SDL_CreateWindow, _SDL_Quit, _SDL_DestroyWindow, \
         _SDL_GetWindowSurface, _SDL_GetRenderer, _SDL_SetRelativeMouseMode, \
-        _SDL_GetRenderer
+        _SDL_GetRenderer, _SDL_CreateTexture
 
         ;; Syscalls
         extern _exit
@@ -23,17 +23,20 @@
         extern game_loop, wolfasm_gui_init, wolfasm_gui_deinit, \
         wolfasm_init_texture, wolfasm_deinit_texture,           \
         wolfasm_init_audio, wolfasm_deinit_audio,               \
-        wolfasm_init_weapon
+        wolfasm_init_weapon, wolfasm_init_sprites,              \
+        wolfasm_deinit_sprites
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
         push  rbp
         mov   rbp, rsp
 
+.sdl_init:
         ;; Initialize SDL
         mov   rdi, SDL_INIT_VIDEO
         call  _SDL_Init
 
+.window_init:
         ;; Start the window
         mov   rdi,  window_name ;; Window title
         mov   rsi, SDL_WINDOWPOS_UNDEFINED ;; X position
@@ -67,10 +70,25 @@ wolfasm:
         je    .exit_fail
         mov   qword [rel window_renderer], rax
 
+        ;; Create window_texture
+        mov   rdi, [rel window_renderer]
+        mov   rsi, SDL_PIXELFORMAT_BGRA32
+        mov   rdx, SDL_TEXTUREACCESS_STREAMING
+        mov   rcx, [rel window_width]
+        mov   r8, [rel window_height]
+        call  _SDL_CreateTexture
+
+        ;; Check if NULL
+        cmp   rax, 0x00
+        je    .exit_fail
+        mov   qword [rel window_texture], rax
+
+.device_init:
         ;; Initialize mouse support
         mov   rdi, 1
         call  _SDL_SetRelativeMouseMode
 
+.sdl_plugins_init:
         ;; Initialize SDL_ttf
         call  wolfasm_gui_init
 
@@ -79,17 +97,25 @@ wolfasm:
 
         ;; TODO: Load map here
 
+.game_data_init:
         ;; Initialize weapons
         call  wolfasm_init_weapon
 
-        ;; Starts the game loop
+        ;; Initialize last graphic elements
         call  wolfasm_init_texture
+        call  wolfasm_init_sprites
+
+.game_loop:
+        ;; Starts the game loop
         call  _c_init   ;; TODO: rm
         call  game_loop
         call  _c_deinit ;; TODO: rm
 
         ;; Clean sounds
         call  wolfasm_deinit_audio
+
+        ;; Unload sprites
+        call  wolfasm_deinit_sprites
 
         ;; Clean SDL_ttf
         call  wolfasm_gui_deinit
@@ -123,6 +149,7 @@ window_height   dq WIN_HEIGHT
 window_ptr      dq 1
 window_surface  dq 1
 window_renderer dq 1
+window_texture dq 1
 
         section .rodata
 window_name     db "WolfASM - bache_a", 0x00
