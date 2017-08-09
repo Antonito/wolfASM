@@ -9,6 +9,7 @@ struc wolfasm_player
   .movement_speed resq 1  ;; Double
   .rotation_speed resq 1  ;; Double
   .weapon         resq 1  ;; Weapon pointer
+  .life           resd 1  ;; Life
   .size:
 endstruc
 
@@ -23,3 +24,5 @@ endstruc
 
 %define PLAYER_MODIFIER_MOV_SPEED 20
 %define PLAYER_MODIFIER_ROT_SPEED 12
+
+%define PLAYER_MAX_LIFE           100

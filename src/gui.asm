@@ -155,6 +155,20 @@ wolfasm_display_gui:
         mov       rdx, [rel fps_text_color]
         call      wolfasm_display_text
 
+.display_life:
+        ;; Create string
+        mov       rdi, text_buff
+        mov       rsi, 128    ;; text_buff_len
+        mov       rdx, life_fmt_str
+        mov       ecx, [rel game_player + wolfasm_player.life]
+        call      _snprintf
+
+        ;; Print to screen
+        mov       rdi, text_buff
+        lea       rsi, [rel life_text_pos]
+        mov       rdx, [rel fps_text_color]
+        call      wolfasm_display_text
+
 .display_ammo:
         ;; Get weapon's ammo informations
         mov       r8, [rel game_player + wolfasm_player.weapon]
@@ -173,8 +187,6 @@ wolfasm_display_gui:
         mov       rdx, [rel fps_text_color]
         call      wolfasm_display_text
 
-;        call      _display_gui_ammo
-
         mov       rsp, rbp
         pop       rbp
         ret
@@ -185,8 +197,10 @@ gui_font_size     dd    24
 fps_fmt_str       db    "FPS: %3.0lf", 0x00
 fps_text_color    db    255, 255, 255, 255
 fps_text_pos      dd    10, 10, 100, 30
+life_fmt_str      db    "%d%%", 0x00
+life_text_pos     dd    WIN_WIDTH - 90, 10, 80, 30
 ammo_fmt_str      db    "%.2d / %.2d", 0x00
-ammo_text_pos     dd    WIN_WIDTH - 110, 10, 100, 30
+ammo_text_pos     dd    WIN_WIDTH - 110, 40, 100, 30
 
         section .bss
 text_buff         resb  128

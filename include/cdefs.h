@@ -41,6 +41,7 @@ struct wolfasm_player {
   double movement_speed;
   double rotation_speed;
   wolfasm_weapon_t *weapon;
+  int32_t life;
 };
 extern struct wolfasm_player game_player __asm__("game_player");
 
