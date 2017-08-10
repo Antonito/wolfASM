@@ -27,16 +27,8 @@ wolfasm_player_move_forward:
         movsd     xmm4, xmm0  ;; Save for later
         cvttsd2si edi, xmm0   ;; Convert double to integer
 
-        ;; Check x < map_width
-        cmp       edi, [rel map_width]
-        jge       .update_y
-
         movsd     xmm0, [rel game_player + wolfasm_player.pos_y]
         cvttsd2si esi, xmm0
-
-        ;; Check y < map_height
-        cmp       esi, [rel map_height]
-        jge       .update_y
 
         ;; Compute map index (y * map_width + x)
         mov       eax, [rel map_width]
@@ -62,16 +54,8 @@ wolfasm_player_move_forward:
         movsd     xmm4, xmm0  ;; Save for later
         cvttsd2si rsi, xmm0   ;; Convert double to integer
 
-        ;; Check y < map_height
-        cmp       rsi, [rel map_height]
-        jge       .end
-
         movsd     xmm0, [rel game_player + wolfasm_player.pos_x]
         cvttsd2si rdi, xmm0
-
-        ;; Check x < map_width
-        cmp       rdi, [rel map_width]
-        jge       .end
 
         ;; Compute map index (y * map_width + x)
         mov       rax, [rel map_width]
@@ -106,16 +90,9 @@ wolfasm_player_move_backward:
         movsd     xmm4, xmm1  ;; Save for later
         cvttsd2si edi, xmm1   ;; Convert double to integer
 
-        ;; Check x < map_width
-        cmp       edi, [rel map_width]
-        jge       .update_y
-
         movsd     xmm0, [rel game_player + wolfasm_player.pos_y]
         cvttsd2si esi, xmm0
 
-        ;; Check y < map_height
-        cmp       esi, [rel map_height]
-        jge       .update_y
 
         ;; Compute map index (y * map_width + x)
         mov       eax, [rel map_width]
@@ -125,13 +102,12 @@ wolfasm_player_move_backward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx]
+        mov       byte dl, [rax + rcx * 4]
 
         ;; Check that case is empty
         cmp       dl, 0
         jne       .update_y
         movsd     [rel game_player + wolfasm_player.pos_x], xmm4
-
 
 .update_y:
         ;; Compute y
@@ -143,32 +119,23 @@ wolfasm_player_move_backward:
         movsd     xmm4, xmm1  ;; Save for later
         cvttsd2si edi, xmm1   ;; Convert double to integer
 
-        ;; Check x < map_width
-        cmp       edi, [rel map_width]
-        jge       .end
-
         movsd     xmm0, [rel game_player + wolfasm_player.pos_x]
         cvttsd2si esi, xmm0
 
-        ;; Check y < map_height
-        cmp       esi, [rel map_height]
-        jge       .end
-
         ;; Compute map index (y * map_width + x)
         mov       eax, [rel map_width]
-        mul       esi
-        add       eax, edi
+        mul       edi
+        add       eax, esi
         mov       ecx, eax
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx]
+        mov       byte dl, [rax + rcx * 4]
 
         ;; Check that case is empty
         cmp       dl, 0
         jne       .end
         movsd     [rel game_player + wolfasm_player.pos_y], xmm4
-
 .end:
         mov       rsp, rbp
         pop       rbp

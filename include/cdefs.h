@@ -48,7 +48,7 @@ extern struct wolfasm_player game_player __asm__("game_player");
 // Map informations
 extern int32_t const map_width __asm__("map_width");
 extern int32_t const map_height __asm__("map_height");
-extern uint8_t const map[] __asm__("map");
+extern uint32_t const map[] __asm__("map");
 
 // Window informations
 extern SDL_Window *window_ptr __asm__("window_ptr");
