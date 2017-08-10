@@ -107,3 +107,8 @@ struct wolfasm_weapon_s {
   int16_t ammo;
   int16_t const max_ammo;
 };
+
+//
+// Items
+//
+enum wolfasm_items { ITEM_AMMO = 1 << 9 };

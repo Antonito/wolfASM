@@ -155,6 +155,7 @@ wolfasm_texture_4:        dd  "./resources/textures/stonebrick_cracked.png", 0x0
 wolfasm_texture_5:        dd  "./resources/textures/end_stone.png", 0x00
 wolfasm_texture_6:        dd  "./resources/textures/planks_oak.png", 0x00
 wolfasm_texture_7:        dd  "./resources/textures/sand.png", 0x00
+wolfasm_texture_8:        dd  "./resources/textures/floor.png", 0x00
 wolfasm_texture_name:     dq  wolfasm_texture_0, \
                               wolfasm_texture_1, \
                               wolfasm_texture_2, \
@@ -162,7 +163,8 @@ wolfasm_texture_name:     dq  wolfasm_texture_0, \
                               wolfasm_texture_4, \
                               wolfasm_texture_5, \
                               wolfasm_texture_6, \
-                              wolfasm_texture_7
+                              wolfasm_texture_7, \
+                              wolfasm_texture_8
 
         section .data
 wolfasm_texture_nb:       dd    TEXTURE_NB

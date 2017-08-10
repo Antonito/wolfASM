@@ -1,5 +1,6 @@
 // Temporary file, will be removed when I have a map loader
 
+#include "cdefs.h"
 #include <stdint.h>
 
 #define MAP_NUMBER 2
@@ -16,10 +17,10 @@ extern uint32_t const map[];
 // clang-format off
 uint32_t const map[] __asm__("map") = {
   1, 1, 1, 1, 1, 1, 1, 1,
-  1, 0, 0, 0, 0, 0, 0, 1,
-  1, 0, 1, 0, 0, 1, 0, 1,
-  1, 0, 1, 0, 0, 1, 0, 1,
-  1, 0, 1, 0, 0, 1, 0, 1,
+  1, ITEM_AMMO, 0, 0, 0, 0, 0, 1,
+  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
+  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
+  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
   1, 0, 0, 0, 0, 0, 0, 1,
   1, 1, 1, 1, 1, 1, 1, 1
 };

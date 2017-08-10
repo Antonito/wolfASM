@@ -16,6 +16,10 @@
         ;; LibC functions
         extern _sqrt, _floor
 
+        ;; TODO: rm
+        global side, ray_dir_x, ray_dir_y, map_x, map_y, draw_start, draw_end, ray_pos_x, ray_pos_y, wall_dist, wall_hit_x
+        extern _draw_floor
+
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
         push      rbp
@@ -249,7 +253,7 @@ wolfasm_raycast:
 
         ;; Calculate line to draw
 .compute_line_height:
-        movsd     [rel perpWallDist], xmm1
+        movsd     [rel wall_dist], xmm1
         mov       rax, [rel window_height]
         cvtsi2sd  xmm0, rax
         divsd     xmm0, xmm1
@@ -299,7 +303,7 @@ wolfasm_raycast:
         mov       dword [rel tex_num], 0
         mov       byte [rel tex_num], dl
 
-        movsd     xmm0, [rel perpWallDist]
+        movsd     xmm0, [rel wall_dist]
         cmp       byte [rel side], 1
         je        .compute_texture_side_1
 .compute_texture_side_0:
@@ -319,6 +323,7 @@ wolfasm_raycast:
         movsd     xmm0, xmm1
         call      _floor
         subsd     xmm1, xmm0   ;; xmm1 -= floor(xmm1)
+        movsd     [rel wall_hit_x], xmm1
 
 .compute_texture_x_coord:
         mov       rax, 64      ;; texWidth
@@ -373,7 +378,7 @@ wolfasm_raycast:
 
 .draw_scene:
         cmp       rsi, rcx
-        je        .draw_scene_end
+        jg        .draw_scene_end
 
         mov       eax, esi
         shl       eax, 8    ;; y * 256
@@ -434,6 +439,12 @@ wolfasm_raycast:
 
 .draw_scene_end:
 
+        sub       rsp, 8
+        push      rdi
+        call      _draw_floor ;; TODO: rm
+        pop       rdi
+        add       rsp, 8
+
         inc       rdi
         jmp       .loop_x
 .loop_x_end:
@@ -456,9 +467,10 @@ map_y:          resd  1
 step_x:         resd  1
 step_y:         resd  1
 side:           resd  1
-perpWallDist:   reso  1
+wall_dist:      reso  1
+wall_hit_x:     reso  1
 tex_x:          resd  1
 tex_num:        resd  1
 draw_end:       resd  1
 draw_start:     resd  1
-line_height:     resd  1
+line_height:    resd  1
