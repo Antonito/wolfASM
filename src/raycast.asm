@@ -16,10 +16,6 @@
         ;; LibC functions
         extern _sqrt, _floor
 
-        ;; TODO: rm
-        global side, ray_dir_x, ray_dir_y, map_x, map_y, draw_start, draw_end, ray_pos_x, ray_pos_y, wall_dist, wall_hit_x
-        extern _draw_floor
-
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
         push      rbp
@@ -378,7 +374,7 @@ wolfasm_raycast:
 
 .draw_scene:
         cmp       rsi, rcx
-        jg        .draw_scene_end
+        jg        .draw_floor
 
         mov       eax, esi
         shl       eax, 8    ;; y * 256
@@ -406,9 +402,9 @@ wolfasm_raycast:
         ;; Get texture from array
         mov       dword r8d, [rel tex_num]
         shl       r8, 12      ;; * 4096 == * texWidth * texHeight
-        lea       edx, [rel wolfasm_texture]
+        lea       rdx, [rel wolfasm_texture]
         lea       rdx, [rdx + r8 * 4]
-        mov       rdx, [rdx + rax * 4]
+        mov       edx, [rdx + rax * 4]
 
         cmp       byte [rel side], 0
         shr       edx, 1
@@ -437,13 +433,160 @@ wolfasm_raycast:
         inc       rsi
         jmp       .draw_scene
 
-.draw_scene_end:
+.draw_floor:
+        ;; Set direction
+        mov       eax, [rel map_x]
+        cvtsi2sd  xmm0, eax
+        movsd     [rel floor_x], xmm0
+        mov       eax, [rel map_y]
+        cvtsi2sd  xmm0, eax
+        movsd     [rel floor_y], xmm0
 
-        sub       rsp, 8
+        cmp       byte [rel side], 0
+        jne       .draw_floor_set_dir_1
+
+.draw_floor_set_dir_0:
+        pxor      xmm1, xmm1
+        movsd     xmm0, [rel ray_dir_x]
+        ucomisd   xmm1, xmm0
+        je        .draw_floor_set_dir_default
+        jb        .draw_floor_set_dir_0_above
+
+.draw_floor_set_dir_0_below:
+        movsd     xmm0, [rel floor_x]
+        mov       rax, 1
+        cvtsi2sd  xmm1, rax
+        addsd     xmm0, xmm1
+        movsd     [rel floor_x], xmm0
+
+.draw_floor_set_dir_0_above:
+        movsd     xmm1, [rel wall_hit_x]
+        movsd     xmm0, [rel floor_y]
+        addsd     xmm0, xmm1
+        movsd     [rel floor_y], xmm0
+        jmp       .draw_floor_set_end
+
+
+.draw_floor_set_dir_1:
+        pxor      xmm1, xmm1
+        movsd     xmm0, [rel ray_dir_y]
+        ucomisd   xmm1, xmm0
+        jb        .draw_floor_set_dir_1_above
+
+.draw_floor_set_dir_default:
+        movsd     xmm0, [rel floor_y]
+        mov       rax, 1
+        cvtsi2sd  xmm1, rax
+        addsd     xmm0, xmm1
+        movsd     [rel floor_y], xmm0
+
+.draw_floor_set_dir_1_above:
+        movsd     xmm1, [rel wall_hit_x]
+        movsd     xmm0, [rel floor_x]
+        addsd     xmm0, xmm1
+        movsd     [rel floor_x], xmm0
+
+
+.draw_floor_set_end:
+        push      rdi       ;; Save counter
+        mov       edi, [rel draw_end]
+        cmp       edi, 0
+        jge       .draw_floor_prepare_loop
+        mov       edi, [rel window_height]
+
+.draw_floor_prepare_loop:
+        inc        edi
+
+.draw_floor_loop:
+        cmp       edi, [rel window_height]
+        je        .draw_floor_end_loop
+
+.draw_floor_compute_distance:
+        mov       eax, edi
+        shl       eax, 1      ;; Multiply by 2
+        cvtsi2sd  xmm0, eax
+        mov       eax, [rel window_height]
+        cvtsi2sd  xmm1, eax
+        subsd     xmm0, xmm1
+        ;; distance = window_height / (2 * y - window_height)
+        divsd     xmm1, xmm0
+
+.draw_floor_compute_weight:
+        ;; weight = distance / wall_dist
+        movsd     xmm0, [rel wall_dist]
+        divsd     xmm1, xmm0
+
+.draw_floor_compute_floor_pos_x:
+        ;; xmm0 = weight * floor_x
+        movsd     xmm0, [rel floor_x]
+        mulsd     xmm0, xmm1
+
+        ;; xmm3 = 1 - weight
+        mov       rax, 1
+        cvtsi2sd  xmm3, rax
+        subsd     xmm3, xmm1
+
+        ;; xmm2 = (1 - weight) * pos_x
+        movsd     xmm2, [rel ray_pos_x]
+        mulsd     xmm2, xmm3
+
+        ;; xmm0 = weight * floor_x + (1 - weight) * pos_x
+        addsd     xmm0, xmm2
+
+.draw_floor_compute_floor_pos_y:
+        ;; xmm2 = weight * floor_y
+        movsd     xmm2, [rel floor_y]
+        mulsd     xmm2, xmm1
+
+        ;; xmm4 = (1 - weight) * pos_y
+        movsd     xmm4, [rel ray_pos_y]
+        mulsd     xmm4, xmm3
+
+        ;; xmm2 = weight * floor_y + (1 - weight) * pos_y
+        addsd     xmm2, xmm4
+
+        mov       rax, 64
+        cvtsi2sd  xmm3, rax
+.draw_floor_compute_floor_texture_x:
+        mulsd     xmm0, xmm3
+        cvttsd2si rdx, xmm0
+        and       rdx, 63         ;; % texture_width
+
+.draw_floor_compute_floor_texture_y:
+        mulsd     xmm2, xmm3
+        cvttsd2si rax, xmm2
+        and       rax, 63         ;; % texture_height
+
+.draw_floor_compute_floor_ndx:
+        shl       rax, 6          ;; * texture_width
+        add       edx, eax
+
+.draw_floor_get_texture:
+        ;; Get texture's pixel
+        mov       dword r8d, 8
+        shl       r8, 12      ;; * 4096 == * texWidth * texHeight
+        lea       rax, [rel wolfasm_texture]
+        lea       rax, [rax + r8 * 4]
+        mov       edx, [rax + rdx * 4]
+
+        ;; Make it darker
+        shr       edx, 1
+        and       edx, 0x7F7F7F
+
+        ;; Save current loop counter
         push      rdi
-        call      _draw_floor ;; TODO: rm
+
+        mov       rsi, rdi
+        mov       rdi, [rsp + 8] ;; Get old x counter
+        call      wolfasm_put_pixel
+
+        ;; Restore current loop counter
         pop       rdi
-        add       rsp, 8
+
+        inc       rdi
+        jmp       .draw_floor_loop
+.draw_floor_end_loop:
+        pop       rdi       ;; Restore counter
 
         inc       rdi
         jmp       .loop_x
@@ -451,6 +594,10 @@ wolfasm_raycast:
         mov       rsp, rbp
         pop       rbp
         ret
+
+        section .rodata
+tex_width_d:    do    64.0
+tex_height_d:   do    64.0
 
         section .bss
 camera_x:       reso  1
@@ -462,13 +609,15 @@ side_dist_x:    reso  1
 side_dist_y:    reso  1
 delta_dist_x:   reso  1
 delta_dist_y:   reso  1
+wall_dist:      reso  1
+wall_hit_x:     reso  1
+floor_x:        reso  1
+floor_y:        reso  1
 map_x:          resd  1
 map_y:          resd  1
 step_x:         resd  1
 step_y:         resd  1
 side:           resd  1
-wall_dist:      reso  1
-wall_hit_x:     reso  1
 tex_x:          resd  1
 tex_num:        resd  1
 draw_end:       resd  1

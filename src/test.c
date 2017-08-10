@@ -73,40 +73,19 @@ void draw_floor(int32_t x) {
   int32_t texHeight = 64;
 
   // FLOOR CASTING
-  double floorXWall,
-      floorYWall; // x, y position of the floor texel at the bottom of the
+  extern double floorXWall __asm__("floor_x");
+  extern double floorYWall __asm__(
+      "floor_y"); // x, y position of the floor texel at the bottom of the
                   // wall
 
-  // 4 different wall directions possible
-  if (side == 0 && rayDirX > 0) {
-    floorXWall = mapX;
-    floorYWall = mapY + wallX;
-  } else if (side == 0 && rayDirX < 0) {
-    floorXWall = mapX + 1.0;
-    floorYWall = mapY + wallX;
-  } else if (side == 1 && rayDirY > 0) {
-    floorXWall = mapX + wallX;
-    floorYWall = mapY;
-  } else {
-    floorXWall = mapX + wallX;
-    floorYWall = mapY + 1.0;
-  }
-
-  double distWall, distPlayer, currentDist;
-
-  distWall = perpWallDist;
-  distPlayer = 0.0;
-
-  if (drawEnd < 0)
-    drawEnd = h; // becomes < 0 when the integer overflows
-
-  // draw the floor from drawEnd to the bottom of the screen
+// draw the floor from drawEnd to the bottom of the screen
+#if 0
   for (int y = drawEnd + 1; y < h; y++) {
-    currentDist =
+    double currentDist =
         h /
         (2.0 * y - h); // you could make a small lookup table for this instead
 
-    double weight = (currentDist - distPlayer) / (distWall - distPlayer);
+    double weight = (currentDist) / (perpWallDist);
 
     double currentFloorX = weight * floorXWall + (1.0 - weight) * posX;
     double currentFloorY = weight * floorYWall + (1.0 - weight) * posY;
@@ -123,4 +102,5 @@ void draw_floor(int32_t x) {
     // ceiling (symmetrical!)
     // color = (texture[8][texWidth * floorTexY + floorTexX] >> 1) & 8355711;
   }
+#endif
 }
