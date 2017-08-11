@@ -1,11 +1,51 @@
 #include "cdefs.h"
 #include <assert.h>
 
+enum wolfasm_player_state {
+  STATE_NOTHING = 0,
+  STATE_FORWARD,
+  STATE_BACKWARD,
+  STATE_LEFT,
+  STATE_RIGHT
+};
+
+static enum wolfasm_player_state player_state = STATE_NOTHING;
+
+// C-Wrapper for event execution
+void wolfasm_events_exec_cwrapper(void) {
+  static void (*func[])() = {NULL, wolfasm_player_move_forward,
+                             wolfasm_player_move_backward, NULL, NULL};
+
+  if (func[player_state]) {
+    func[player_state]();
+  }
+}
+
 // C-Wrapper for SDL_KEYUP events
 void wolfasm_events_keyboard_up_cwrapper(SDL_Event const *events) {
   assert(events == &game_events);
   assert(events->type == SDL_KEYUP);
   switch (events->key.keysym.sym) {
+  // Move forward if no wall in front of you
+  case SDLK_w:
+    player_state = STATE_NOTHING;
+    break;
+
+  // Move backwards if no wall behind
+  case SDLK_s:
+    player_state = STATE_NOTHING;
+    break;
+
+  // Rotate right
+  case SDLK_d:
+    player_state = STATE_NOTHING;
+    break;
+
+  // Rotate left
+  case SDLK_a:
+    player_state = STATE_NOTHING;
+    break;
+
   default:
     break;
   }
@@ -23,21 +63,23 @@ void wolfasm_events_keyboard_down_cwrapper(SDL_Event const *events) {
 
   // Move forward if no wall in front of you
   case SDLK_w:
-    wolfasm_player_move_forward();
+    player_state = STATE_FORWARD;
     break;
 
   // Move backwards if no wall behind
   case SDLK_s:
-    wolfasm_player_move_backward();
+    player_state = STATE_BACKWARD;
     break;
 
   // Rotate right
   case SDLK_d:
+    player_state = STATE_RIGHT;
     wolfasm_player_rotate_right();
     break;
 
   // Rotate left
   case SDLK_a:
+    player_state = STATE_LEFT;
     wolfasm_player_rotate_left();
     break;
 

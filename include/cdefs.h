@@ -2,6 +2,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_Mixer.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 // ASM Bindings
@@ -23,6 +24,7 @@ void wolfasm_events_mouse_motion_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_events_mouse_motion_cwrapper");
 void wolfasm_event_window_cwrapper(SDL_Event const *events) __asm__(
     "wolfasm_event_window_cwrapper");
+void wolfasm_events_exec_cwrapper(void) __asm__("wolfasm_events_exec_cwrapper");
 
 // Weapons
 void *wolfasm_change_weapon(int32_t weapon) __asm__("wolfasm_change_weapon");
@@ -46,9 +48,14 @@ struct wolfasm_player {
 extern struct wolfasm_player game_player __asm__("game_player");
 
 // Map informations
+typedef struct wolfasm_map_case {
+  uint32_t value;
+  struct wolfasm_item_s *item;
+} wolfasm_map_case_t;
+_Static_assert(sizeof(wolfasm_map_case_t) == 16, "Invalid map case size");
 extern int32_t const map_width __asm__("map_width");
 extern int32_t const map_height __asm__("map_height");
-extern uint32_t const map[] __asm__("map");
+extern wolfasm_map_case_t map[] __asm__("map");
 
 // Window informations
 extern SDL_Window *window_ptr __asm__("window_ptr");
@@ -111,4 +118,24 @@ struct wolfasm_weapon_s {
 //
 // Items
 //
-enum wolfasm_items { ITEM_AMMO = 1 << 9 };
+enum wolfasm_item_type { ITEM_AMMO, ITEM_MEDIKIT, ITEM_ENEMY };
+
+struct wolfasm_item_s {
+  int32_t texture;
+  int32_t pos_x;
+  int32_t pos_y;
+  int32_t width_div;
+  int32_t height_div;
+  double height_move;
+
+  int32_t current_anim;
+  int32_t nb_anim;
+  int32_t anim_rate;
+  int32_t *texture_table;
+
+  int32_t stock;
+  enum wolfasm_item_type type;
+  void (*callback)(void);
+};
+
+//_Static_assert(sizeof(struct wolfasm_item_s) == 72, "Invalid item size");

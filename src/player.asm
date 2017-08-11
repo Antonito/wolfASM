@@ -1,17 +1,43 @@
         [bits 64]
 
         %include "player.inc"
+        %include "map.inc"
+        %include "weapon.inc"
 
         section .text
 
         global wolfasm_player_move_forward, wolfasm_player_move_backward, \
-        wolfasm_player_rotate_right, wolfasm_player_rotate_left
+        wolfasm_player_rotate_right, wolfasm_player_rotate_left,          \
+        wolfasm_player_refill_ammo, wolfasm_player_refill_life
         global game_player
 
         extern map_width, map_height, map
 
         ;; Lib C functions
         extern _cos, _sin
+
+wolfasm_player_refill_ammo:
+        push      rbp
+        mov       rbp, rsp
+
+        mov       rdi, [rel game_player + wolfasm_player.weapon]
+        mov       ax, [rdi + wolfasm_weapon_s.max_ammo]
+        mov       [rdi + wolfasm_weapon_s.ammo], ax
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
+wolfasm_player_refill_life:
+        push      rbp
+        mov       rbp, rsp
+
+        mov       rax, 100
+        mov       [rel game_player + wolfasm_player.life], eax
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
 
 wolfasm_player_move_forward:
         push      rbp
@@ -38,7 +64,8 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte dl, [rax + rcx]
 
         cmp       dl, 0
         jne       .update_y
@@ -65,7 +92,8 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte dl, [rax + rcx]
 
         cmp       dl, 0
         jne       .end
@@ -74,6 +102,7 @@ wolfasm_player_move_forward:
 .end:
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
 wolfasm_player_move_backward:
@@ -102,7 +131,8 @@ wolfasm_player_move_backward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte dl, [rax + rcx]
 
         ;; Check that case is empty
         cmp       dl, 0
@@ -130,7 +160,8 @@ wolfasm_player_move_backward:
 
         ;; Get map index
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte dl, [rax + rcx]
 
         ;; Check that case is empty
         cmp       dl, 0
@@ -139,6 +170,7 @@ wolfasm_player_move_backward:
 .end:
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
 wolfasm_player_rotate_right:
@@ -209,6 +241,7 @@ wolfasm_player_rotate_right:
 
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
 wolfasm_player_rotate_left:
@@ -271,6 +304,7 @@ wolfasm_player_rotate_left:
 
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
         section .data

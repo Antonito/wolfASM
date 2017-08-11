@@ -14,7 +14,8 @@
         ;; wolfasm functions
         extern wolfasm_events_keyboard_down, wolfasm_events_keyboard_up,  \
         wolfasm_events_mouse_down, wolfasm_events_mouse_up,               \
-        wolfasm_event_mouse_motion, wolfasm_event_window
+        wolfasm_event_mouse_motion, wolfasm_event_window,                 \
+        wolfasm_events_exec_cwrapper
 
 ;; This function process the events
 wolfasm_events:
@@ -73,6 +74,9 @@ wolfasm_events:
         jmp   .poll
 
 .end_poll:
+
+        call  wolfasm_events_exec_cwrapper
+
         mov   rsp, rbp
         pop   rbp
         ret

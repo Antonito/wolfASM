@@ -101,6 +101,7 @@ wolfasm_event_mouse_motion_handle:
 
           mov       rsp, rbp
           pop       rbp
+          emms
           ret
 
           section .data

@@ -27,7 +27,6 @@ wolfasm_display:
 
 .raycasting:
         ;; Process graphics
-        call  wolfasm_set_sky
         call  wolfasm_raycast
 
 .pre_blit:
@@ -87,47 +86,6 @@ wolfasm_put_pixel:
         mov   rax, r9
         mov   dword [r8 + rcx], eax
 
-        mov   rsp, rbp
-        pop   rbp
-        ret
-
-;; Draw the sky
-wolfasm_set_sky:
-        push  rbp
-        mov   rbp, rsp
-
-        xor   rsi, rsi
-        mov   r8, [rel window_height]
-        shr   r8, 1 ;; window_height / 2
-.loop_y:
-        cmp    rsi, r8
-        je    .end_loop_y
-
-        xor   rdi, rdi
-
-.loop_x:
-        cmp   rdi, [rel window_width]
-        je    .end_loop_x
-
-        push  rdi
-        push  rsi
-        push  r8
-        sub   rsp, 8
-        mov   edx, SKY_COLOR
-        call  wolfasm_put_pixel
-        add   rsp, 8
-        pop   r8
-        pop   rsi
-        pop   rdi
-
-        inc   rdi
-        jmp   .loop_x
-.end_loop_x:
-
-        inc   rsi
-        jmp   .loop_y
-
-.end_loop_y:
         mov   rsp, rbp
         pop   rbp
         ret

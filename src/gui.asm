@@ -189,6 +189,7 @@ wolfasm_display_gui:
 
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
         section .rodata

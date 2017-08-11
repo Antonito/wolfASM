@@ -16,6 +16,10 @@
         ;; LibC functions
         extern _sqrt, _floor
 
+        ;; TODO: rm
+        global wolfasm_z_buffer
+        extern _display_sprites
+
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
         push      rbp
@@ -207,7 +211,8 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX] > 0
         lea       rax, [rel map]
-        mov       byte cl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte cl, [rax + rcx]
         cmp       byte cl, 0
         ;; We hit a hall, stop iterating
         jne       .compute_wall_distance
@@ -257,6 +262,10 @@ wolfasm_raycast:
         cvttsd2si esi, xmm0  ;; line_height is esi
         mov       [rel line_height], esi
 
+.set_zbuffer:
+        lea       r8, [rel wolfasm_z_buffer]
+        movsd     [r8 + rdi * 8], xmm1
+
         ;; Compute line's limits
 .compute_limits:
 .compute_limits_start:
@@ -294,7 +303,8 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX]
         lea       rax, [rel map]
-        mov       byte dl, [rax + rcx * 4]
+        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        mov       byte dl, [rax + rcx]
         dec       dl      ;; Decrement so texture[0] can be used
         mov       dword [rel tex_num], 0
         mov       byte [rel tex_num], dl
@@ -562,6 +572,12 @@ wolfasm_raycast:
         add       edx, eax
 
 .draw_floor_get_texture:
+        ;; Save current loop counter
+        push      rdi
+
+        ;; Save position
+        push      rdx
+
         ;; Get texture's pixel
         mov       dword r8d, 8
         shl       r8, 12      ;; * 4096 == * texWidth * texHeight
@@ -573,11 +589,35 @@ wolfasm_raycast:
         shr       edx, 1
         and       edx, 0x7F7F7F
 
-        ;; Save current loop counter
-        push      rdi
-
         mov       rsi, rdi
-        mov       rdi, [rsp + 8] ;; Get old x counter
+        mov       rdi, [rsp + 16] ;; Get old x counter
+
+        ;; Save parameters for later call
+        push      rsi
+        call      wolfasm_put_pixel
+        pop       rsi
+
+.draw_floor_sky:
+        ;; Restore position
+        pop       rdx
+
+        ;; Get texture's pixel
+        mov       dword r8d, 3
+        shl       r8, 12      ;; * 4096 == * texWidth * texHeight
+        lea       rax, [rel wolfasm_texture]
+        lea       rax, [rax + r8 * 4]
+        mov       edx, [rax + rdx * 4]
+
+        ;; Make it darker
+        shr       edx, 1
+        and       edx, 0x7F7F7F
+
+        ;; Print
+        mov       r8d, [rel window_height]
+        sub       r8, rsi
+        mov       rsi, r8
+        mov       rdi, [rsp + 8]
+
         call      wolfasm_put_pixel
 
         ;; Restore current loop counter
@@ -591,8 +631,10 @@ wolfasm_raycast:
         inc       rdi
         jmp       .loop_x
 .loop_x_end:
+call _display_sprites
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
         section .rodata
@@ -623,3 +665,4 @@ tex_num:        resd  1
 draw_end:       resd  1
 draw_start:     resd  1
 line_height:    resd  1
+wolfasm_z_buffer:       reso  WIN_WIDTH

@@ -3,11 +3,11 @@
 #include "cdefs.h"
 #include <stdint.h>
 
-#define MAP_NUMBER 2
+#define MAP_NUMBER 1
 
 extern int32_t const map_width;
 extern int32_t const map_height;
-extern uint32_t const map[];
+extern wolfasm_map_case_t map[];
 
 #if MAP_NUMBER == 1
 
@@ -15,48 +15,47 @@ extern uint32_t const map[];
 #define MAP_HEIGHT (7)
 
 // clang-format off
-uint32_t const map[] __asm__("map") = {
-  1, 1, 1, 1, 1, 1, 1, 1,
-  1, ITEM_AMMO, 0, 0, 0, 0, 0, 1,
-  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
-  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
-  1, 0, 1, ITEM_AMMO, ITEM_AMMO, 1, 0, 1,
-  1, 0, 0, 0, 0, 0, 0, 1,
-  1, 1, 1, 1, 1, 1, 1, 1
-};
-// clang-format on
+wolfasm_map_case_t  map[] __asm__("map") = {
+    {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL},
+    {1, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {1, NULL},
+    {1, NULL}, {0, NULL}, {1, NULL}, {0, NULL}, {0, NULL}, {1, NULL}, {0, NULL}, {1, NULL},
+    {1, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {1, NULL}, {0, NULL}, {1, NULL},
+    {1, NULL}, {0, NULL}, {1, NULL}, {0, NULL}, {0, NULL}, {1, NULL}, {0, NULL}, {1, NULL},
+    {1, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {0, NULL}, {1, NULL},
+    {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}, {1, NULL}};
+//clang-format on
 
-#elif MAP_NUMBER == 2
+#elif MAP_NUMBER == {2, NULL}
 
-#define MAP_WIDTH (24)
-#define MAP_HEIGHT (24)
+#define MAP_WIDTH ({2, NULL}{4, NULL}
+#define MAP_HEIGHT ({2, NULL}{4, NULL}
 
 // clang-format off
-uint32_t const map[] __asm__("map") = {
-  4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,7,7,7,7,7,7,7,7,
-  4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7,
-  4,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
-  4,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,
-  4,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,0,7,
-  4,0,4,0,0,0,0,5,5,5,5,5,5,5,5,5,7,7,0,7,7,7,7,7,
-  4,0,5,0,0,0,0,5,0,5,0,5,0,5,0,5,7,0,0,0,7,7,7,1,
-  4,0,6,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8,
-  4,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,7,7,1,
-  4,0,8,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,0,0,0,8,
-  4,0,0,0,0,0,0,5,0,0,0,0,0,0,0,5,7,0,0,0,7,7,7,1,
-  4,0,0,0,0,0,0,5,5,5,5,0,5,5,5,5,7,7,7,7,7,7,7,1,
-  6,6,6,6,6,6,6,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6,
-  8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,4,
-  6,6,6,6,6,6,0,6,6,6,6,0,6,6,6,6,6,6,6,6,6,6,6,6,
-  4,4,4,4,4,4,0,4,4,4,6,0,6,2,2,2,2,2,2,2,3,3,3,3,
-  4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2,
-  4,0,0,0,0,0,0,0,0,0,0,0,6,2,0,0,5,0,0,2,0,0,0,2,
-  4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2,
-  4,0,6,0,6,0,0,0,0,4,6,0,0,0,0,0,5,0,0,0,0,0,0,2,
-  4,0,0,5,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,2,0,2,2,
-  4,0,6,0,6,0,0,0,0,4,6,0,6,2,0,0,5,0,0,2,0,0,0,2,
-  4,0,0,0,0,0,0,0,0,4,6,0,6,2,0,0,0,0,0,2,0,0,0,2,
-  4,4,4,4,4,4,4,4,4,4,1,1,1,2,2,2,2,2,2,3,3,3,3,3
+wolfasm_map_case_t  map[] __asm__("map") = {
+  {4, NULL},{4, NULL}, {7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{1, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{3, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{7, NULL},{7, NULL},{0, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},
+  {4, NULL}{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{5, NULL},{0, NULL},{5, NULL},{0, NULL},{5, NULL},{0, NULL},{5, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},{7, NULL},{7, NULL},{1, NULL},
+  {4, NULL}{0, NULL},{6, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{8, NULL},
+  {4, NULL}{0, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},{7, NULL},{7, NULL},{1, NULL},
+  {4, NULL}{0, NULL},{8, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{8, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{7, NULL},{0, NULL},{0, NULL},{0, NULL},{7, NULL},{7, NULL},{7, NULL},{1, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{0, NULL},{5, NULL},{5, NULL},{5, NULL},{5, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{7, NULL},{1, NULL},
+  {6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{0, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},
+  {8, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}
+  {6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{0, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{0, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},{6, NULL},
+  {4, NULL}{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{3, NULL},{3, NULL},{3, NULL},{3, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},{2, NULL},{0, NULL},{2, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{6, NULL},{0, NULL},{6, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},{2, NULL},{0, NULL},{2, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{6, NULL},{0, NULL},{6, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{5, NULL},{0, NULL},{0, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},
+  {4, NULL}{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{4, NULL}{6, NULL},{0, NULL},{6, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},{0, NULL},{0, NULL},{0, NULL},{2, NULL},
+  {4, NULL}{1, NULL},{1, NULL},{1, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{2, NULL},{3, NULL},{3, NULL},{3, NULL},{3, NULL},{3, NULL}
 };
 // clang-format on
 #endif

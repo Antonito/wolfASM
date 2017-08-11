@@ -24,7 +24,7 @@
         wolfasm_init_texture, wolfasm_deinit_texture,           \
         wolfasm_init_audio, wolfasm_deinit_audio,               \
         wolfasm_init_weapon, wolfasm_init_sprites,              \
-        wolfasm_deinit_sprites
+        wolfasm_deinit_sprites, wolfasm_items_init
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -104,6 +104,7 @@ wolfasm:
         ;; Initialize last graphic elements
         call  wolfasm_init_texture
         call  wolfasm_init_sprites
+        call  wolfasm_items_init
 
 .game_loop:
         ;; Starts the game loop

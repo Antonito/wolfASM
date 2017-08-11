@@ -156,15 +156,25 @@ wolfasm_texture_5:        dd  "./resources/textures/end_stone.png", 0x00
 wolfasm_texture_6:        dd  "./resources/textures/planks_oak.png", 0x00
 wolfasm_texture_7:        dd  "./resources/textures/sand.png", 0x00
 wolfasm_texture_8:        dd  "./resources/textures/floor.png", 0x00
-wolfasm_texture_name:     dq  wolfasm_texture_0, \
-                              wolfasm_texture_1, \
-                              wolfasm_texture_2, \
-                              wolfasm_texture_3, \
-                              wolfasm_texture_4, \
-                              wolfasm_texture_5, \
-                              wolfasm_texture_6, \
-                              wolfasm_texture_7, \
-                              wolfasm_texture_8
+wolfasm_texture_9:        dd  "./resources/textures/ammo.png", 0x00
+wolfasm_texture_10:       dd  "./resources/textures/medikit.png", 0x00
+wolfasm_texture_11:       dd  "./resources/textures/enemy_shoot_0.png", 0x00
+wolfasm_texture_12:       dd  "./resources/textures/enemy_shoot_1.png", 0x00
+wolfasm_texture_13:       dd  "./resources/textures/enemy_shoot_2.png", 0x00
+wolfasm_texture_name:     dq  wolfasm_texture_0,   \
+                              wolfasm_texture_1,   \
+                              wolfasm_texture_2,   \
+                              wolfasm_texture_3,   \
+                              wolfasm_texture_4,   \
+                              wolfasm_texture_5,   \
+                              wolfasm_texture_6,   \
+                              wolfasm_texture_7,   \
+                              wolfasm_texture_8,   \
+                              wolfasm_texture_9,   \
+                              wolfasm_texture_10,  \
+                              wolfasm_texture_11,  \
+                              wolfasm_texture_12,  \
+                              wolfasm_texture_13
 
         section .data
 wolfasm_texture_nb:       dd    TEXTURE_NB

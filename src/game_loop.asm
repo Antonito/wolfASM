@@ -78,6 +78,7 @@ wolfasm_ticks:
 
         mov       rsp, rbp
         pop       rbp
+        emms
         ret
 
         section .data
