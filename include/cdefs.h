@@ -120,7 +120,12 @@ struct wolfasm_weapon_s {
 //
 enum wolfasm_item_type { ITEM_AMMO, ITEM_MEDIKIT, ITEM_ENEMY };
 
-struct wolfasm_item_s {
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpacked"
+#endif
+
+struct __attribute__((packed)) wolfasm_item_s {
   int32_t texture;
   int32_t pos_x;
   int32_t pos_y;
@@ -138,4 +143,8 @@ struct wolfasm_item_s {
   void (*callback)(void);
 };
 
-//_Static_assert(sizeof(struct wolfasm_item_s) == 72, "Invalid item size");
+#if defined __clang__
+#pragma clang diagnostic pop
+#endif
+
+_Static_assert(sizeof(struct wolfasm_item_s) == 64, "Invalid item size");

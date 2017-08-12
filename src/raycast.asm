@@ -4,7 +4,7 @@
         %include "player.inc"
 
         section .text
-        global wolfasm_raycast
+        global wolfasm_raycast, wolfasm_z_buffer
 
         ;; wolfasm symbols
         extern game_player, map, map_width, wolfasm_put_pixel,  \
@@ -15,10 +15,6 @@
 
         ;; LibC functions
         extern _sqrt, _floor
-
-        ;; TODO: rm
-        global wolfasm_z_buffer
-        extern _display_sprites
 
 ;; Loop through the whole the screen and compute each pixel's ray
 wolfasm_raycast:
@@ -631,7 +627,6 @@ wolfasm_raycast:
         inc       rdi
         jmp       .loop_x
 .loop_x_end:
-call _display_sprites
         mov       rsp, rbp
         pop       rbp
         emms

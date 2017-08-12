@@ -11,7 +11,8 @@
 
         ;; wolfasm symbols
         extern window_surface, window_ptr, window_renderer,   \
-        window_width, window_height, window_texture
+        window_width, window_height, window_texture,          \
+        wolfasm_display_items_and_mobs
 
         ;; wolfasm functions
         extern wolfasm_raycast, wolfasm_display_gui, wolfasm_display_sprites
@@ -28,6 +29,7 @@ wolfasm_display:
 .raycasting:
         ;; Process graphics
         call  wolfasm_raycast
+        call  wolfasm_display_items_and_mobs
 
 .pre_blit:
         ;; Pre blit to the screen
