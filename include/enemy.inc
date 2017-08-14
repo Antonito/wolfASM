@@ -1,0 +1,1 @@
+%define ENEMY_ANIMATION_SHOOT_NB    3

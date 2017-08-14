@@ -56,11 +56,8 @@ void display_sprites_cwrapper(void) {
   }
 }
 
-extern uint32_t wolfasm_texture[10][64 * 64] __asm__("wolfasm_texture");
-extern void wolfasm_put_pixel(int32_t x, int32_t y,
-                              uint32_t color) __asm__("wolfasm_put_pixel");
-
-void combSort(int *order, double *dist, int amount) {
+void comb_sort(int *order, double *dist, int amount);
+void comb_sort(int *order, double *dist, int amount) {
   int gap = amount;
   bool swapped = false;
   while (gap > 1 || swapped) {
@@ -91,60 +88,6 @@ void combSort(int *order, double *dist, int amount) {
         swapped = true;
       }
     }
-  }
-}
-
-void display_sprites(int i);
-void display_sprites(int i) {
-  extern int wolfasm_sprite_order[] __asm__("wolfasm_sprite_order");
-
-  // after sorting the sprites, do the projection and draw them
-  struct wolfasm_item_s *item = &wolfasm_items[wolfasm_sprite_order[i]];
-
-  extern double const transformX __asm__("wolfasm_item_transform_x");
-  extern double const transformY __asm__("wolfasm_item_transform_y");
-  extern int const vMoveScreen __asm__("wolfasm_item_vmove_screen");
-  extern int const spriteScreenX __asm__("wolfasm_item_sprite_screen_x");
-  extern int const spriteHeight __asm__("wolfasm_item_sprite_height");
-
-  int const w = window_width;
-  assert(spriteScreenX == (int)((w / 2) * (1 + transformX / transformY)));
-
-  int const h = window_height;
-
-  int drawStartY = -spriteHeight / 2 + h / 2 + vMoveScreen;
-  if (drawStartY < 0)
-    drawStartY = 0;
-  int drawEndY = spriteHeight / 2 + h / 2 + vMoveScreen;
-  if (drawEndY >= h)
-    drawEndY = h - 1;
-
-  // calculate width of the sprite
-  int const spriteWidth = abs((int)(h / (transformY)) / item->width_div);
-  int drawStartX = -spriteWidth / 2 + spriteScreenX;
-  if (drawStartX < 0)
-    drawStartX = 0;
-  int drawEndX = spriteWidth / 2 + spriteScreenX;
-  if (drawEndX >= w)
-    drawEndX = w - 1;
-
-  for (int stripe = drawStartX; stripe < drawEndX; stripe++) {
-    int const texX = (int)(256 * (stripe - (-spriteWidth / 2 + spriteScreenX)) *
-                           64 / spriteWidth) /
-                     256;
-
-    if (transformY > 0 && stripe > 0 && stripe < w &&
-        transformY < wolfasm_z_buffer[stripe])
-      for (int y = drawStartY; y < drawEndY;
-           y++) // for every pixel of the current stripe
-      {
-        int d = (y - vMoveScreen) * 256 - h * 128 +
-                spriteHeight * 128; // 256 and 128 factors to avoid floats
-        int texY = ((d * 64) / spriteHeight) / 256;
-        uint32_t color = wolfasm_texture[item->texture][64 * texY + texX];
-        if (color & 0xFF000000)
-          wolfasm_put_pixel(stripe, y, color);
-      }
   }
 }
 
