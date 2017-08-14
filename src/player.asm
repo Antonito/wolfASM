@@ -64,7 +64,7 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
         cmp       dl, 0
@@ -92,7 +92,7 @@ wolfasm_player_move_forward:
 
         ;; Get map index
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
         cmp       dl, 0
@@ -131,7 +131,7 @@ wolfasm_player_move_backward:
 
         ;; Get map index
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
         ;; Check that case is empty
@@ -160,7 +160,7 @@ wolfasm_player_move_backward:
 
         ;; Get map index
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
         ;; Check that case is empty

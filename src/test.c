@@ -11,6 +11,8 @@
 void c_deinit(void);
 void c_init(void);
 void init_textures(void);
+void enemy_init(void);
+void enemy_deinit(void);
 
 void display_sprites_cwrapper(void);
 
@@ -25,10 +27,12 @@ extern double wolfasm_z_buffer[] __asm__("wolfasm_z_buffer");
 void c_init() {
   // You can initialize stuff before the game loop
   // memset(wolfasm_z_buffer, 0, sizeof(double) * (size_t)window_width);
+  enemy_init();
 }
 
 void c_deinit() {
   // You can initialize stuff after the game loop
+  enemy_deinit();
 }
 
 //
@@ -92,7 +96,103 @@ void comb_sort(int *order, double *dist, int amount) {
 }
 
 // Game logic
+static int32_t wolfasm_enemies_nb = 0;
+static struct wolfasm_enemy_s *enemies = NULL;
+
 void game_logic_cwrapper(void);
 void game_logic_cwrapper(void) {
   // Implement game logic elements here
+  for (int32_t i = 0; i < wolfasm_enemies_nb; ++i) {
+    switch (enemies[i].state) {
+    case ENEMY_DIE:
+      if (!enemies[i].item->current_anim) {
+        enemies[i].item->stock = 0;
+        map[enemies[i].item->pos_y * map_width + enemies[i].item->pos_x].enemy =
+            NULL;
+      }
+      break;
+    default:
+      break;
+    }
+  }
+}
+
+// Enemy
+
+void enemy_init(void) {
+  // Init enemies here
+  enemies = calloc(sizeof(*enemies) * wolfasm_items_nb, 1);
+  if (!enemies) {
+    perror("calloc");
+    exit(1);
+  }
+  for (int32_t i = 0; i < wolfasm_items_nb; ++i) {
+    if (wolfasm_items[i].type == ITEM_ENEMY) {
+      enemies[wolfasm_enemies_nb].state = ENEMY_STILL;
+      enemies[wolfasm_enemies_nb].item = &wolfasm_items[i];
+      enemies[wolfasm_enemies_nb].life = 100;
+      map[wolfasm_items[i].pos_y * map_width + wolfasm_items[i].pos_x].enemy =
+          &enemies[wolfasm_enemies_nb];
+      ++wolfasm_enemies_nb;
+    }
+  }
+}
+
+void enemy_deinit(void) {
+  // De-init enemies here
+  free(enemies);
+}
+
+void enemy_kill(struct wolfasm_enemy_s *const enemy);
+void enemy_kill(struct wolfasm_enemy_s *const enemy) {
+  extern int32_t enemy_animation_die[] __asm__("enemy_animation_die");
+  assert(enemy->life <= 0);
+
+  enemy->state = ENEMY_DIE;
+  enemy->item->texture_table = enemy_animation_die;
+  enemy->item->nb_anim = 7;
+}
+
+void player_shoot(void);
+void player_shoot(void) {
+  extern void wolfasm_play_sound(int) __asm__("wolfasm_play_sound");
+
+  if (game_player.weapon->sprite->trigger == 0) {
+
+    // Check that enough ammo
+    if (game_player.weapon->ammo) {
+      wolfasm_play_sound(game_player.weapon->sound);
+      --game_player.weapon->ammo;
+
+      // Detect if any enemy there
+      {
+        double const inc_base = 0.01;
+        int32_t pos = 0;
+        double inc = inc_base;
+        do {
+          int32_t const pos_x =
+              game_player.pos_x + (int)((double)game_player.dir_x * inc);
+          int32_t const pos_y =
+              game_player.pos_y + (int)((double)game_player.dir_y * inc);
+          pos = pos_y * map_width + pos_x;
+          if (map[pos].enemy) {
+            assert(map[pos].value == 0);
+            map[pos].enemy->life -= game_player.weapon->damage;
+            printf("Enemy Life: %d [-%d]\n", map[pos].enemy->life,
+                   game_player.weapon->damage);
+            if (map[pos].enemy->life <= 0) {
+              enemy_kill(map[pos].enemy);
+            }
+            break;
+          }
+          inc += inc_base;
+        } while (!map[pos].value);
+      }
+
+    } else {
+      wolfasm_play_sound(SOUND_NO_AMMO);
+    }
+
+    game_player.weapon->sprite->trigger = 1;
+  }
 }

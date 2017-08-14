@@ -48,16 +48,22 @@ wolfasm_items_init:
         add       eax, r8d
         mov       edx, eax
 
+        ;; If enemy, don't store it
+        mov       eax, ITEM_ENEMY
+        cmp       eax, [rdi + wolfasm_item_s.type]
+        je        .next_loop
+
         ;; Get map index
         lea       rax, [rel map]
         shl       rdx, 4            ;; WOLFASM_MAP_CASE_SIZE
         lea       rax, [rax + rdx + wolfasm_map_case.item]
         mov       [rax], rdi
 
+.next_loop:
         inc       ecx
         jmp       .loop
-.end_loop:
 
+.end_loop:
         mov       rsp, rbp
         pop       rbp
         ret
@@ -371,7 +377,7 @@ wolfasm_display_items_and_mobs:
 
         mov       edi, ecx
         mov       esi, r8d
-        ;; Edx already contains all we need
+        ;; edx already contains all we need
         call      wolfasm_put_pixel
 
         pop       rcx
@@ -395,6 +401,9 @@ wolfasm_display_items_and_mobs:
 .animation:
         mov       r9, [r8 + wolfasm_item_s.texture_table]
         cmp       r9, 0
+        je        .no_animation
+
+        cmp       dword [r8 + wolfasm_item_s.stock], 0
         je        .no_animation
 
         ;; Go to next animation
@@ -433,6 +442,21 @@ wolfasm_display_items_and_mobs:
         section .data
 wolfasm_items:
 istruc wolfasm_item_s
+      at wolfasm_item_s.texture,        dd    11
+      at wolfasm_item_s.pos_x,          dd    4
+      at wolfasm_item_s.pos_y,          dd    4
+      at wolfasm_item_s.width_div,      dd    1
+      at wolfasm_item_s.height_div,     dd    1
+      at wolfasm_item_s.height_move,    dq    1.0
+      at wolfasm_item_s.current_anim,   dd    0
+      at wolfasm_item_s.nb_anim,        dd    ENEMY_ANIMATION_SHOOT_NB
+      at wolfasm_item_s.anim_rate,      dd    30
+      at wolfasm_item_s.texture_table,  dq    enemy_animation_shoot
+      at wolfasm_item_s.stock,          dd    -1
+      at wolfasm_item_s.type,           dd    ITEM_ENEMY
+      at wolfasm_item_s.callback,       dq    0
+iend
+istruc wolfasm_item_s
       at wolfasm_item_s.texture,        dd    9
       at wolfasm_item_s.pos_x,          dd    4
       at wolfasm_item_s.pos_y,          dd    3
@@ -458,24 +482,9 @@ istruc wolfasm_item_s
       at wolfasm_item_s.nb_anim,        dd    0
       at wolfasm_item_s.anim_rate,      dd    1
       at wolfasm_item_s.texture_table,  dq    0
-      at wolfasm_item_s.stock,          dd    5
+      at wolfasm_item_s.stock,          dd    -1 ; 5
       at wolfasm_item_s.type,           dd    ITEM_AMMO
       at wolfasm_item_s.callback,       dq    wolfasm_player_refill_ammo
-iend
-istruc wolfasm_item_s
-      at wolfasm_item_s.texture,        dd    11
-      at wolfasm_item_s.pos_x,          dd    4
-      at wolfasm_item_s.pos_y,          dd    4
-      at wolfasm_item_s.width_div,      dd    1
-      at wolfasm_item_s.height_div,     dd    1
-      at wolfasm_item_s.height_move,    dq    1.0
-      at wolfasm_item_s.current_anim,   dd    0
-      at wolfasm_item_s.nb_anim,        dd    ENEMY_ANIMATION_SHOOT_NB
-      at wolfasm_item_s.anim_rate,      dd    30
-      at wolfasm_item_s.texture_table,  dq    enemy_animation_shoot
-      at wolfasm_item_s.stock,          dd    -1
-      at wolfasm_item_s.type,           dd    ITEM_ENEMY
-      at wolfasm_item_s.callback,       dq    0
 iend
 istruc wolfasm_item_s
       at wolfasm_item_s.texture,        dd    10
@@ -492,7 +501,7 @@ istruc wolfasm_item_s
       at wolfasm_item_s.type,           dd    ITEM_MEDIKIT
       at wolfasm_item_s.callback,       dq    wolfasm_player_refill_life
 iend
-wolfasm_items_nb:                       dd    4
+wolfasm_items_nb:                       dd    1;4
 
       section .bss
 wolfasm_sprite_order:                   resd   4

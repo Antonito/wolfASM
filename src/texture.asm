@@ -10,7 +10,7 @@
         _SDL_GetError
 
         ;; LibC functions
-        extern _exit, _puts
+        extern _exit, _puts, _printf
 
         ;; TODO: rm
         global wolfasm_texture_surface
@@ -93,10 +93,14 @@ wolfasm_init_texture:
         jmp       .loop
 
 .texture_load_err:
+        mov       rdi, wolfasm_texture_err
+        lea       rsi, [rel wolfasm_texture_name]
+        mov       rsi, [rsi + rcx * 8]
+        call      _printf
         ;; Get SDL Error
-        call       _SDL_GetError
-        mov        rdi, rax
-        call       _puts
+        call      _SDL_GetError
+        mov       rdi, rax
+        call      _puts
 
 .exit_err:
         mov       rdi, 1
@@ -147,6 +151,7 @@ wolfasm_deinit_texture:
         ret
 
         section .rodata
+wolfasm_texture_err:      dd  "Cannot load texture %s", 0x0A, 0x00
 wolfasm_texture_0:        dd  "./resources/textures/stone.png", 0x00
 wolfasm_texture_1:        dd  "./resources/textures/stonebrick_mossy.png", 0x00
 wolfasm_texture_2:        dd  "./resources/textures/log_jungle.png", 0x00
@@ -161,6 +166,11 @@ wolfasm_texture_10:       dd  "./resources/textures/medikit.png", 0x00
 wolfasm_texture_11:       dd  "./resources/textures/enemy_shoot_0.png", 0x00
 wolfasm_texture_12:       dd  "./resources/textures/enemy_shoot_1.png", 0x00
 wolfasm_texture_13:       dd  "./resources/textures/enemy_shoot_2.png", 0x00
+wolfasm_texture_14:       dd  "./resources/textures/enemy_dead_0.png", 0x00
+wolfasm_texture_15:       dd  "./resources/textures/enemy_dead_1.png", 0x00
+wolfasm_texture_16:       dd  "./resources/textures/enemy_dead_2.png", 0x00
+wolfasm_texture_17:       dd  "./resources/textures/enemy_dead_3.png", 0x00
+wolfasm_texture_18:       dd  "./resources/textures/enemy_dead_4.png", 0x00
 wolfasm_texture_name:     dq  wolfasm_texture_0,   \
                               wolfasm_texture_1,   \
                               wolfasm_texture_2,   \
@@ -174,7 +184,12 @@ wolfasm_texture_name:     dq  wolfasm_texture_0,   \
                               wolfasm_texture_10,  \
                               wolfasm_texture_11,  \
                               wolfasm_texture_12,  \
-                              wolfasm_texture_13
+                              wolfasm_texture_13,  \
+                              wolfasm_texture_14,  \
+                              wolfasm_texture_15,  \
+                              wolfasm_texture_16,  \
+                              wolfasm_texture_17,  \
+                              wolfasm_texture_18
 
         section .data
 wolfasm_texture_nb:       dd    TEXTURE_NB

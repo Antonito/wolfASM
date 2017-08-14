@@ -51,8 +51,10 @@ extern struct wolfasm_player game_player __asm__("game_player");
 typedef struct wolfasm_map_case {
   uint32_t value;
   struct wolfasm_item_s *item;
+  struct wolfasm_enemy_s *enemy;
+  void *padding;
 } wolfasm_map_case_t;
-_Static_assert(sizeof(wolfasm_map_case_t) == 16, "Invalid map case size");
+_Static_assert(sizeof(wolfasm_map_case_t) == 32, "Invalid map case size");
 extern int32_t const map_width __asm__("map_width");
 extern int32_t const map_height __asm__("map_height");
 extern wolfasm_map_case_t map[] __asm__("map");
@@ -113,6 +115,7 @@ struct wolfasm_weapon_s {
   enum wolfasm_weapon_type type;
   int16_t ammo;
   int16_t const max_ammo;
+  int32_t const damage;
 };
 
 //
@@ -148,3 +151,14 @@ struct __attribute__((packed)) wolfasm_item_s {
 #endif
 
 _Static_assert(sizeof(struct wolfasm_item_s) == 64, "Invalid item size");
+
+//
+// Enemy
+//
+enum wolfasm_enemy_state { ENEMY_DIE, ENEMY_MOVE, ENEMY_SHOOT, ENEMY_STILL };
+
+struct wolfasm_enemy_s {
+  struct wolfasm_item_s *item;
+  int32_t life;
+  enum wolfasm_enemy_state state;
+};

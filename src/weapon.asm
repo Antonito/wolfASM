@@ -103,6 +103,7 @@ istruc wolfasm_weapon_s
       at wolfasm_weapon_s.type,     dd    WOLFASM_PISTOL
       at wolfasm_weapon_s.ammo,     dw    WOLFASM_PISTOL_MAX_AMMO / 2
       at wolfasm_weapon_s.max_ammo, dw    WOLFASM_PISTOL_MAX_AMMO
+      at wolfasm_weapon_s.damage,   dd    WOLFASM_PISTOL_DMG
 iend
 istruc wolfasm_weapon_s
       at wolfasm_weapon_s.sprite,   dq    0
@@ -110,6 +111,7 @@ istruc wolfasm_weapon_s
       at wolfasm_weapon_s.type,     dd    WOLFASM_SHOTGUN
       at wolfasm_weapon_s.ammo,     dw    WOLFASM_SHOTGUN_MAX_AMMO / 2
       at wolfasm_weapon_s.max_ammo, dw    WOLFASM_SHOTGUN_MAX_AMMO
+      at wolfasm_weapon_s.damage,   dd    WOLFASM_SHOTGUN_DMG
 iend
 istruc wolfasm_weapon_s
       at wolfasm_weapon_s.sprite,   dq    0
@@ -117,4 +119,5 @@ istruc wolfasm_weapon_s
       at wolfasm_weapon_s.type,     dd    WOLFASM_BARREL
       at wolfasm_weapon_s.ammo,     dw    WOLFASM_BARREL_MAX_AMMO / 2
       at wolfasm_weapon_s.max_ammo, dw    WOLFASM_BARREL_MAX_AMMO
+      at wolfasm_weapon_s.damage,   dd    WOLFASM_BARREL_DMG
 iend

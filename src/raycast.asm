@@ -207,7 +207,7 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX] > 0
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte cl, [rax + rcx]
         cmp       byte cl, 0
         ;; We hit a hall, stop iterating
@@ -299,7 +299,7 @@ wolfasm_raycast:
 
         ;; map[mapY * map_width + mapX]
         lea       rax, [rel map]
-        shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
+        shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
         dec       dl      ;; Decrement so texture[0] can be used
         mov       dword [rel tex_num], 0
