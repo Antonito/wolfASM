@@ -501,7 +501,7 @@ istruc wolfasm_item_s
       at wolfasm_item_s.type,           dd    ITEM_MEDIKIT
       at wolfasm_item_s.callback,       dq    wolfasm_player_refill_life
 iend
-wolfasm_items_nb:                       dd    1;4
+wolfasm_items_nb:                       dd    4
 
       section .bss
 wolfasm_sprite_order:                   resd   4

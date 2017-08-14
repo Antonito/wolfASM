@@ -4,6 +4,7 @@
 #include "cdefs.h"
 #include <SDL2/SDL_Image.h>
 #include <assert.h>
+#include <time.h>
 
 //
 // Prototypes
@@ -27,6 +28,7 @@ extern double wolfasm_z_buffer[] __asm__("wolfasm_z_buffer");
 void c_init() {
   // You can initialize stuff before the game loop
   // memset(wolfasm_z_buffer, 0, sizeof(double) * (size_t)window_width);
+  srand((unsigned int)time(NULL));
   enemy_init();
 }
 
@@ -98,11 +100,16 @@ void comb_sort(int *order, double *dist, int amount) {
 // Game logic
 static int32_t wolfasm_enemies_nb = 0;
 static struct wolfasm_enemy_s *enemies = NULL;
+void enemy_init_single(struct wolfasm_enemy_s *enemy);
+void spawn_enemy(struct wolfasm_enemy_s *enemy);
 
 void game_logic_cwrapper(void);
 void game_logic_cwrapper(void) {
   // Implement game logic elements here
   for (int32_t i = 0; i < wolfasm_enemies_nb; ++i) {
+    if (!enemies[i].item->stock) {
+      spawn_enemy(&enemies[i]);
+    }
     switch (enemies[i].state) {
     case ENEMY_DIE:
       if (!enemies[i].item->current_anim) {
@@ -111,28 +118,54 @@ void game_logic_cwrapper(void) {
             NULL;
       }
       break;
-    default:
+    case ENEMY_MOVE:
+      break;
+    case ENEMY_SHOOT:
+      break;
+    case ENEMY_STILL:
       break;
     }
   }
 }
 
 // Enemy
+void spawn_enemy(struct wolfasm_enemy_s *enemy) {
+  int32_t x = 0;
+  int32_t y = 0;
+
+  do {
+    x = rand() % map_width;
+    y = rand() % map_height;
+  } while (map[y * map_width + x].value);
+  enemy->item->pos_x = x;
+  enemy->item->pos_y = y;
+  enemy_init_single(enemy);
+}
+
+void enemy_init_single(struct wolfasm_enemy_s *enemy) {
+  extern int32_t enemy_animation_shoot[] __asm__(
+      "enemy_animation_shoot"); // TODO: Change table
+
+  enemy->state = ENEMY_STILL;
+  enemy->life = 100;
+  map[enemy->item->pos_y * map_width + enemy->item->pos_x].enemy = enemy;
+  enemy->item->stock = -1;
+  enemy->item->texture_table = enemy_animation_shoot;
+  enemy->item->nb_anim = 3;
+  enemy->item->current_anim = 0;
+}
 
 void enemy_init(void) {
   // Init enemies here
-  enemies = calloc(sizeof(*enemies) * wolfasm_items_nb, 1);
+  enemies = calloc(sizeof(*enemies) * (size_t)wolfasm_items_nb, 1);
   if (!enemies) {
     perror("calloc");
     exit(1);
   }
   for (int32_t i = 0; i < wolfasm_items_nb; ++i) {
     if (wolfasm_items[i].type == ITEM_ENEMY) {
-      enemies[wolfasm_enemies_nb].state = ENEMY_STILL;
       enemies[wolfasm_enemies_nb].item = &wolfasm_items[i];
-      enemies[wolfasm_enemies_nb].life = 100;
-      map[wolfasm_items[i].pos_y * map_width + wolfasm_items[i].pos_x].enemy =
-          &enemies[wolfasm_enemies_nb];
+      enemy_init_single(&enemies[wolfasm_enemies_nb]);
       ++wolfasm_enemies_nb;
     }
   }
@@ -166,14 +199,14 @@ void player_shoot(void) {
 
       // Detect if any enemy there
       {
-        double const inc_base = 0.01;
+        double const inc_base = 0.0001;
         int32_t pos = 0;
         double inc = inc_base;
         do {
           int32_t const pos_x =
-              game_player.pos_x + (int)((double)game_player.dir_x * inc);
+              (int)(game_player.pos_x + (double)game_player.dir_x * inc);
           int32_t const pos_y =
-              game_player.pos_y + (int)((double)game_player.dir_y * inc);
+              (int)(game_player.pos_y + (double)game_player.dir_y * inc);
           pos = pos_y * map_width + pos_x;
           if (map[pos].enemy) {
             assert(map[pos].value == 0);

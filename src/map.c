@@ -3,7 +3,7 @@
 #include "cdefs.h"
 #include <stdint.h>
 
-#define MAP_NUMBER 2
+#define MAP_NUMBER 1
 
 extern int32_t const map_width;
 extern int32_t const map_height;
