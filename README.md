@@ -6,7 +6,7 @@ This project was about building a raycasting game, in plain C.
 I am building it again, but this time in x86_64 assembly.
 
 
-![WolfASM ScreenShot](http://i.imgur.com/a7dbS1r.gif "WolfASM ScreenShot")
+![WolfASM ScreenShot](http://i.imgur.com/uZ1r6cr.gif "WolfASM ScreenShot")
  _Current progress_
 
 ## Dependencies
