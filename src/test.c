@@ -105,6 +105,8 @@ void spawn_enemy(struct wolfasm_enemy_s *enemy);
 
 void game_logic_cwrapper(void);
 void game_logic_cwrapper(void) {
+  extern int32_t enemy_animation_shoot[] __asm__("enemy_animation_shoot");
+
   // Implement game logic elements here
   for (int32_t i = 0; i < wolfasm_enemies_nb; ++i) {
     if (!enemies[i].item->stock) {
@@ -112,7 +114,8 @@ void game_logic_cwrapper(void) {
     }
     switch (enemies[i].state) {
     case ENEMY_DIE:
-      if (!enemies[i].item->current_anim) {
+      if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
+          enemies[i].item->nb_anim - 1) {
         enemies[i].item->stock = 0;
         map[enemies[i].item->pos_y * map_width + enemies[i].item->pos_x].enemy =
             NULL;
@@ -123,6 +126,15 @@ void game_logic_cwrapper(void) {
     case ENEMY_SHOOT:
       break;
     case ENEMY_STILL:
+      break;
+    case ENEMY_HIT:
+      if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
+          enemies[i].item->nb_anim - 1) {
+        enemies[i].state = ENEMY_STILL;
+        enemies[i].item->texture_table = enemy_animation_shoot;
+        enemies[i].item->nb_anim = 3;
+        enemies[i].item->current_anim = 0;
+      }
       break;
     }
   }
@@ -189,6 +201,7 @@ void enemy_kill(struct wolfasm_enemy_s *const enemy) {
 void player_shoot(void);
 void player_shoot(void) {
   extern void wolfasm_play_sound(int) __asm__("wolfasm_play_sound");
+  extern int enemy_animation_hit[] __asm__("enemy_animation_hit");
 
   if (game_player.weapon->sprite->trigger == 0) {
 
@@ -208,14 +221,20 @@ void player_shoot(void) {
           int32_t const pos_y =
               (int)(game_player.pos_y + (double)game_player.dir_y * inc);
           pos = pos_y * map_width + pos_x;
-          if (map[pos].enemy) {
+          if (map[pos].enemy && map[pos].enemy->life > 0) {
             assert(map[pos].value == 0);
             map[pos].enemy->life -= game_player.weapon->damage;
-            printf("Enemy Life: %d [-%d]\n", map[pos].enemy->life,
-                   game_player.weapon->damage);
+
+            map[pos].enemy->state = ENEMY_HIT;
+            map[pos].enemy->item->texture_table = enemy_animation_hit;
+            map[pos].enemy->item->nb_anim = 4;
+            map[pos].enemy->item->current_anim = 0;
+
             if (map[pos].enemy->life <= 0) {
               enemy_kill(map[pos].enemy);
             }
+            printf("Enemy Life: %d [-%d]\n", map[pos].enemy->life,
+                   game_player.weapon->damage);
             break;
           }
           inc += inc_base;

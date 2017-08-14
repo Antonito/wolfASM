@@ -155,7 +155,13 @@ _Static_assert(sizeof(struct wolfasm_item_s) == 64, "Invalid item size");
 //
 // Enemy
 //
-enum wolfasm_enemy_state { ENEMY_DIE, ENEMY_MOVE, ENEMY_SHOOT, ENEMY_STILL };
+enum wolfasm_enemy_state {
+  ENEMY_HIT,
+  ENEMY_DIE,
+  ENEMY_MOVE,
+  ENEMY_SHOOT,
+  ENEMY_STILL
+};
 
 struct wolfasm_enemy_s {
   struct wolfasm_item_s *item;

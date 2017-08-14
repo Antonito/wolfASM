@@ -171,6 +171,7 @@ wolfasm_texture_15:       dd  "./resources/textures/enemy_dead_1.png", 0x00
 wolfasm_texture_16:       dd  "./resources/textures/enemy_dead_2.png", 0x00
 wolfasm_texture_17:       dd  "./resources/textures/enemy_dead_3.png", 0x00
 wolfasm_texture_18:       dd  "./resources/textures/enemy_dead_4.png", 0x00
+wolfasm_texture_19:       dd  "./resources/textures/enemy_hit_0.png", 0x00
 wolfasm_texture_name:     dq  wolfasm_texture_0,   \
                               wolfasm_texture_1,   \
                               wolfasm_texture_2,   \
@@ -189,7 +190,8 @@ wolfasm_texture_name:     dq  wolfasm_texture_0,   \
                               wolfasm_texture_15,  \
                               wolfasm_texture_16,  \
                               wolfasm_texture_17,  \
-                              wolfasm_texture_18
+                              wolfasm_texture_18,  \
+                              wolfasm_texture_19
 
         section .data
 wolfasm_texture_nb:       dd    TEXTURE_NB
