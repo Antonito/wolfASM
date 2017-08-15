@@ -5,8 +5,8 @@
 
 #define MAP_NUMBER 1
 
-extern int32_t const map_width;
-extern int32_t const map_height;
+extern uint32_t const map_width;
+extern uint32_t const map_height;
 extern wolfasm_map_case_t map[];
 
 #if MAP_NUMBER == 1
@@ -60,8 +60,8 @@ wolfasm_map_case_t  map[] __asm__("map") = {
 // clang-format on
 #endif
 
-int32_t const map_width __asm__("map_width") = MAP_WIDTH;
-int32_t const map_height __asm__("map_height") = MAP_HEIGHT;
+uint32_t const map_width __asm__("map_width") = MAP_WIDTH;
+uint32_t const map_height __asm__("map_height") = MAP_HEIGHT;
 
 _Static_assert(sizeof(map) == sizeof(map[0]) * MAP_WIDTH * MAP_HEIGHT,
                "Invalid map size");

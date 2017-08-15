@@ -5,7 +5,7 @@ RM?=			rm -f
 
 NAME:=		wolfasm
 
-SRC:=			$(shell find -E . -regex '.*\.(asm|c)')
+SRC:=			$(shell find -E ./src -regex '.*\.(asm|c)')
 
 CFLAGS+=	-I./include -Weverything -Wno-nonportable-system-include-path -O3 -g
 ASFLAGS+=	-f macho64 -I./include/ -O0

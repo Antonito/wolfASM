@@ -55,8 +55,8 @@ typedef struct wolfasm_map_case {
   void *padding;
 } wolfasm_map_case_t;
 _Static_assert(sizeof(wolfasm_map_case_t) == 32, "Invalid map case size");
-extern int32_t const map_width __asm__("map_width");
-extern int32_t const map_height __asm__("map_height");
+extern uint32_t const map_width __asm__("map_width");
+extern uint32_t const map_height __asm__("map_height");
 extern wolfasm_map_case_t map[] __asm__("map");
 
 // Window informations
