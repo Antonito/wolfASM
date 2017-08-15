@@ -450,7 +450,7 @@ istruc wolfasm_item_s
       at wolfasm_item_s.height_move,    dq    1.0
       at wolfasm_item_s.current_anim,   dd    0
       at wolfasm_item_s.nb_anim,        dd    ENEMY_ANIMATION_SHOOT_NB
-      at wolfasm_item_s.anim_rate,      dd    30
+      at wolfasm_item_s.anim_rate,      dd    10
       at wolfasm_item_s.texture_table,  dq    enemy_animation_shoot
       at wolfasm_item_s.stock,          dd    -1
       at wolfasm_item_s.type,           dd    ITEM_ENEMY

@@ -15,6 +15,9 @@
         ;; wolfasm symbols
         extern game_player
 
+        ;; TODO: rm
+        extern _wolfasm_regulate_framerate
+
 game_loop:
         push      rbp
         mov       rbp, rsp
@@ -35,6 +38,8 @@ game_loop:
 
         ;; Handle tick
         call      wolfasm_ticks
+        mov       rdi, 60
+        call      _wolfasm_regulate_framerate
 
         ;; Go back to loop
         jmp       .loop

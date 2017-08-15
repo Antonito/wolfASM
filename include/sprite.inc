@@ -12,7 +12,8 @@ endstruc
 %define SPRITE_PISTOL       0
 %define SPRITE_SHOTGUN      1
 %define SPRITE_BARREL       2
-%define NB_WOLFASM_SPRITES  3
+%define SPRITE_MENU_BG      3
+%define NB_WOLFASM_SPRITES  4
 
 %define SPRITE_WEAPON_WIDTH       62 * 4
 %define SPRITE_WEAPON_HEIGHT      SPRITE_WEAPON_WIDTH

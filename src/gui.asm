@@ -4,7 +4,7 @@
         %include "player.inc"
         %include "weapon.inc"
 
-        global wolfasm_gui_init, wolfasm_gui_deinit, wolfasm_display_gui, gui_font
+        global wolfasm_gui_init, wolfasm_gui_deinit, wolfasm_display_gui, gui_font, wolfasm_display_text
 
         ;; SDL2 functions
         extern _TTF_Init, _TTF_Quit, _TTF_OpenFont, _TTF_CloseFont, \
@@ -21,6 +21,7 @@
 
         ;; TODO: rm
         extern _display_gui_ammo
+        global gui_font
 
         section .text
 ;; Initialize GUI display

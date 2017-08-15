@@ -3,6 +3,7 @@
 
 #include "cdefs.h"
 #include <SDL2/SDL_Image.h>
+#include <SDL2/SDL_ttf.h>
 #include <assert.h>
 #include <time.h>
 
@@ -109,33 +110,35 @@ void game_logic_cwrapper(void) {
 
   // Implement game logic elements here
   for (int32_t i = 0; i < wolfasm_enemies_nb; ++i) {
-    if (!enemies[i].item->stock) {
-      spawn_enemy(&enemies[i]);
-    }
-    switch (enemies[i].state) {
-    case ENEMY_DIE:
-      if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
-          enemies[i].item->nb_anim - 1) {
-        enemies[i].item->stock = 0;
-        map[enemies[i].item->pos_y * map_width + enemies[i].item->pos_x].enemy =
-            NULL;
+    if (enemies[i].item) {
+      if (!enemies[i].item->stock) {
+        spawn_enemy(&enemies[i]);
       }
-      break;
-    case ENEMY_MOVE:
-      break;
-    case ENEMY_SHOOT:
-      break;
-    case ENEMY_STILL:
-      break;
-    case ENEMY_HIT:
-      if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
-          enemies[i].item->nb_anim - 1) {
-        enemies[i].state = ENEMY_STILL;
-        enemies[i].item->texture_table = enemy_animation_shoot;
-        enemies[i].item->nb_anim = 3;
-        enemies[i].item->current_anim = 0;
+      switch (enemies[i].state) {
+      case ENEMY_DIE:
+        if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
+            enemies[i].item->nb_anim - 1) {
+          enemies[i].item->stock = 0;
+          map[enemies[i].item->pos_y * map_width + enemies[i].item->pos_x]
+              .enemy = NULL;
+        }
+        break;
+      case ENEMY_MOVE:
+        break;
+      case ENEMY_SHOOT:
+        break;
+      case ENEMY_STILL:
+        break;
+      case ENEMY_HIT:
+        if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
+            enemies[i].item->nb_anim - 1) {
+          enemies[i].state = ENEMY_STILL;
+          enemies[i].item->texture_table = enemy_animation_shoot;
+          enemies[i].item->nb_anim = 3;
+          enemies[i].item->current_anim = 0;
+        }
+        break;
       }
-      break;
     }
   }
 }
@@ -233,8 +236,6 @@ void player_shoot(void) {
             if (map[pos].enemy->life <= 0) {
               enemy_kill(map[pos].enemy);
             }
-            printf("Enemy Life: %d [-%d]\n", map[pos].enemy->life,
-                   game_player.weapon->damage);
             break;
           }
           inc += inc_base;
@@ -247,4 +248,175 @@ void player_shoot(void) {
 
     game_player.weapon->sprite->trigger = 1;
   }
+}
+
+// Menu
+extern void
+wolfasm_display_text(char const *text, SDL_Rect const *pos,
+                     uint32_t cololor) __asm__("wolfasm_display_text");
+void render_button(char const *text, int32_t const x, int32_t y, int32_t width,
+                   bool selected) {
+  extern TTF_Font *gui_font __asm__("gui_font");
+  SDL_Rect const rect = {x, y, width, window_height / 16};
+
+  if (selected) {
+    TTF_SetFontStyle(gui_font, TTF_STYLE_UNDERLINE);
+  }
+
+  wolfasm_display_text(text, &rect, 0xFFFFFFFF);
+
+  if (selected) {
+    TTF_SetFontStyle(gui_font, TTF_STYLE_NORMAL);
+  }
+}
+
+enum wolfasm_buttons {
+  BUTTON_PLAY = 0,
+  BUTTON_MULTIPLAYER,
+  BUTTON_EXIT,
+  NB_BUTTON
+};
+
+void wolfasm_regulate_framerate(uint32_t fps) {
+  static uint32_t old_ticks = 0;
+  uint32_t ticks = SDL_GetTicks();
+  uint32_t elapsed = ticks - old_ticks;
+
+  if (elapsed < 1000u / fps) {
+    SDL_Delay((1000u / fps) - elapsed);
+  }
+  old_ticks = ticks;
+}
+
+static Mix_Music *wolfasm_music[2] = {};
+char const *wolfasm_music_files[] = {"./resources/sounds/menu_0.ogg",
+                                     "./resources/sounds/menu_1.ogg"};
+
+void wolfasm_load_music() {
+  for (size_t i = 0;
+       i < sizeof(wolfasm_music_files) / sizeof(wolfasm_music_files[0]); ++i) {
+    char const *file = wolfasm_music_files[i];
+
+    wolfasm_music[i] = Mix_LoadMUS(file);
+    if (!wolfasm_music[i]) {
+      printf("Error loading %s : %s\n", file, SDL_GetError());
+      exit(1);
+    }
+  }
+}
+
+void wolfasm_deinit_music() {
+  Mix_HaltMusic();
+  for (size_t i = 0; i < sizeof(wolfasm_music) / sizeof(wolfasm_music[0]);
+       ++i) {
+    Mix_FreeMusic(wolfasm_music[i]);
+  }
+}
+
+void wolfasm_menu_play_music(void) {
+  int ndx = rand() % (sizeof(wolfasm_music) / sizeof(wolfasm_music[0]));
+  Mix_PlayMusic(wolfasm_music[ndx], 1);
+}
+
+extern void wolfasm(void) __asm__("wolfasm");
+int wolfasm_menu(void) {
+  bool running = true;
+
+  wolfasm_load_music();
+  wolfasm_menu_play_music();
+  while (running) {
+    static enum wolfasm_buttons selected_button = BUTTON_PLAY;
+    static void (*callbacks[NB_BUTTON])() = {&wolfasm, NULL, NULL};
+    SDL_Event event;
+
+    // Handle events
+    if (!SDL_PollEvent(&event)) {
+      switch (event.type) {
+      case SDL_QUIT:
+        running = false;
+        break;
+
+      case SDL_KEYUP:
+        switch (event.key.keysym.sym) {
+
+        // Menu controls
+        case SDLK_LEFT:
+          break;
+        case SDLK_RIGHT:
+          break;
+        case SDLK_UP:
+          SDL_Delay(10);
+          break;
+        case SDLK_DOWN:
+          SDL_Delay(10);
+          break;
+        case SDLK_RETURN:
+          break;
+        }
+        break;
+      case SDL_KEYDOWN:
+        switch (event.key.keysym.sym) {
+
+        // Menu controls
+        case SDLK_LEFT:
+          break;
+        case SDLK_RIGHT:
+          break;
+        case SDLK_UP:
+          if (selected_button == 0) {
+            selected_button = NB_BUTTON - 1;
+          } else {
+            --selected_button;
+          }
+          SDL_Delay(120);
+          break;
+        case SDLK_DOWN:
+          ++selected_button;
+          if (selected_button == NB_BUTTON) {
+            selected_button = 0;
+          }
+          SDL_Delay(120);
+          break;
+        case SDLK_RETURN:
+          if (selected_button == BUTTON_EXIT) {
+            running = false;
+          } else if (callbacks[selected_button]) {
+            Mix_HaltMusic();
+            callbacks[selected_button]();
+            wolfasm_menu_play_music();
+            SDL_Delay(120);
+          }
+          break;
+
+        case SDLK_ESCAPE:
+          running = false;
+          break;
+
+        default:
+          break;
+        }
+        break;
+
+      default:
+        break;
+      }
+    }
+
+    // Display  Menu
+    SDL_RenderClear(window_renderer);
+    render_sprite(&wolfasm_sprite[3], 0, 0, NULL);
+    render_button("Play", window_width / 2, window_height / 2,
+                  window_width / 16, selected_button == BUTTON_PLAY);
+    render_button("Multiplayer", window_width / 2,
+                  window_height / 2 + window_height / 8, window_width / 4,
+                  selected_button == BUTTON_MULTIPLAYER);
+    render_button("Exit", window_width / 2,
+                  window_height / 2 + 2 * (window_height / 8),
+                  window_width / 16, selected_button == BUTTON_EXIT);
+    SDL_RenderPresent(window_renderer);
+    wolfasm_regulate_framerate(60);
+  }
+
+  wolfasm_deinit_music();
+  return EXIT_SUCCESS;
 }

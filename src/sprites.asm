@@ -1,9 +1,11 @@
         [bits 64]
 
         %include "sprite.inc"
+        %include "window.inc"
 
         global wolfasm_init_sprites, wolfasm_deinit_sprites,        \
-        wolfasm_display_sprites, wolfasm_sprite
+        wolfasm_display_sprites, wolfasm_sprite,                    \
+        wolfasm_render_sprite
 
         ;; wolfasm symbols
         extern window_renderer
@@ -15,9 +17,6 @@
 
         ;; LibC functions
         extern _exit, _puts
-
-        ;;TODO: rm
-        global wolfasm_render_sprite
 
         ;; TODO: rm
         extern _display_sprites_cwrapper
@@ -193,9 +192,11 @@ wolfasm_display_sprites:
 wolfasm_sprite_file_0:  db  "./resources/sprites/pistol.png", 0x00
 wolfasm_sprite_file_1:  db  "./resources/sprites/shotgun.png", 0x00
 wolfasm_sprite_file_2:  db  "./resources/sprites/barrel.png", 0x00
+wolfasm_sprite_file_3:  db  "./resources/sprites/menu.png", 0x00
 wolfasm_sprite_file:    dq  wolfasm_sprite_file_0,  \
                             wolfasm_sprite_file_1,  \
-                            wolfasm_sprite_file_2
+                            wolfasm_sprite_file_2,  \
+                            wolfasm_sprite_file_3
 
 ;; SPRITE_PISTOL             x      y     w     h
 sprite_pistol_0:       dd    0,    42,   60,   62
@@ -215,6 +216,8 @@ sprite_barrel_0:       dd    0,   75,   59,   55
 sprite_barrel_1:       dd    62,  27,   83,  102
 sprite_barrel_2:       dd    148,  0,  121,  130
 sprite_barrel_3:       dd    272, 50,   81,   80
+
+sprite_menu_0:         dd    0,   0, WIN_WIDTH, WIN_HEIGHT
 
         section .data
 wolfasm_sprite:
@@ -245,6 +248,16 @@ istruc wolfasm_sprite_s
         at wolfasm_sprite_s.width,          dd    SPRITE_WEAPON_WIDTH
         at wolfasm_sprite_s.height,         dd    SPRITE_WEAPON_HEIGHT
         at wolfasm_sprite_s.nb_sprites,     dw    SPRITE_BARREL_NB_ANIM
+        at wolfasm_sprite_s.current_anim,   dw    0
+        at wolfasm_sprite_s.trigger,        dd    0
+iend
+;; Menu background
+istruc wolfasm_sprite_s
+        at wolfasm_sprite_s.texture,        dq    0
+        at wolfasm_sprite_s.sprite,         dq    0
+        at wolfasm_sprite_s.width,          dd    WIN_WIDTH
+        at wolfasm_sprite_s.height,         dd    WIN_HEIGHT
+        at wolfasm_sprite_s.nb_sprites,     dw    0
         at wolfasm_sprite_s.current_anim,   dw    0
         at wolfasm_sprite_s.trigger,        dd    0
 iend
