@@ -6,7 +6,7 @@
         global game_loop, game_running, frame_time
 
         ;; SDL2 functions
-        extern _SDL_GetTicks
+        extern _SDL_GetTicks, _SDL_Delay
 
         ;; wolfasm functions
         extern wolfasm_events, wolfasm_display, wolfasm_logic, \
@@ -38,8 +38,6 @@ game_loop:
 
         ;; Handle tick
         call      wolfasm_ticks
-        mov       rdi, 60
-        call      _wolfasm_regulate_framerate
 
         ;; Go back to loop
         jmp       .loop
@@ -81,6 +79,23 @@ wolfasm_ticks:
         mulsd     xmm1, xmm0
         movsd     [rel game_player + wolfasm_player.rotation_speed], xmm1
 
+        ;; Regulate FPS here
+        movsd     xmm0, [rel cur_time]
+        movsd     xmm1, [rel old_time]
+        subsd     xmm0, xmm1
+        xor       rdx, rdx
+        mov       eax, 1000
+        mov       edi, 60
+        div       edi
+        cvtsi2sd  xmm1, eax
+        ucomisd   xmm0, xmm1
+        jae       .no_sleep
+
+        subsd     xmm1, xmm0
+        cvttsd2si rdi, xmm1
+        call      _SDL_Delay
+
+.no_sleep:
         mov       rsp, rbp
         pop       rbp
         emms

@@ -9,3 +9,11 @@
 %define SOUND_BARREL      2
 %define SOUND_NO_AMMO     3
 %define NB_WOLFASM_SOUNDS 4
+
+;; Define musics here
+%define MUSIC_MENU_0            0
+%define MUSIC_MENU_1            1
+%define MUSIC_MENU_2            2
+%define MUSIC_MENU_3            3
+%define NB_WOLFASM_MUSIC_MENU   4
+%define NB_WOLFASM_MUSICS       4

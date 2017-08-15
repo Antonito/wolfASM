@@ -3,15 +3,16 @@
         %include "audio.inc"
 
         global  wolfasm_init_audio, wolfasm_deinit_audio,       \
-        wolfasm_play_sound
+        wolfasm_play_sound, wolfasm_menu_play_music
 
         ;; SDL functions
         extern  _Mix_OpenAudio, _Mix_CloseAudio, _SDL_GetError, \
         _SDL_RWFromFile, _Mix_LoadWAV_RW, _Mix_FreeChunk,       \
-        _Mix_PlayChannelTimed
+        _Mix_PlayChannelTimed, _Mix_LoadMUS, _Mix_FreeMusic,    \
+        _Mix_PlayMusic
 
         ;; LibC functions
-        extern _puts, _exit
+        extern _puts, _exit, _rand
 
         section .text
 
@@ -68,6 +69,34 @@ wolfasm_init_audio:
         jmp       .loop_sounds
 .loop_sounds_end:
 
+        ;; Now load musics
+        xor       rcx, rcx
+        mov       edx, NB_WOLFASM_MUSICS
+.loop_musics:
+        cmp       ecx, edx
+        je        .loop_musics_end
+
+        push      rcx   ;; Save counter
+        push      rdx   ;; Save end
+
+        lea       rdi, [rel wolfasm_music_file]
+        mov       rdi, [rdi + rcx * 8]
+        call      _Mix_LoadMUS
+
+        cmp       rax, 0
+        je        .err
+
+        pop       rdx   ;; Restore end
+        pop       rcx   ;; Restore counter
+
+        ;; Store music
+        lea       rdi, [rel wolfasm_musics]
+        mov       qword [rdi + rcx * 8], rax
+
+        inc       rcx
+        jmp       .loop_musics
+.loop_musics_end:
+
         mov       rsp, rbp
         pop       rbp
         ret
@@ -108,6 +137,26 @@ wolfasm_deinit_audio:
         jmp         .wolfasm_deinit_sounds_loop
 .wolfasm_deinit_sounds_loop_end:
 
+        xor         rcx, rcx
+        mov         edx, NB_WOLFASM_MUSICS
+.wolfasm_deinit_musics_loop:
+        cmp         ecx, edx
+        je          .wolfasm_deinit_musics_loop_end
+
+        push        rcx ;; Save counter
+        push        rdx ;; Save end
+
+        lea         rdi, [rel wolfasm_musics]
+        mov         rdi, [rdi + rcx * 8]
+        call        _Mix_FreeMusic
+
+        pop         rdx ;; Restore counter
+        pop         rcx ;; Restore end
+
+        inc         rcx
+        jmp         .wolfasm_deinit_musics_loop
+.wolfasm_deinit_musics_loop_end:
+
         ;; Stop SDL_Mixer
         call      _Mix_CloseAudio
 
@@ -142,6 +191,24 @@ wolfasm_play_sound:
         pop       rbp
         ret
 
+wolfasm_menu_play_music:
+        push      rbp
+        mov       rbp, rsp
+
+        call      _rand
+        xor       rdx, rdx
+        mov       r8d, NB_WOLFASM_MUSIC_MENU
+        div       r8d
+
+        lea       rdi, [rel wolfasm_musics]
+        mov       rdi, [rdi + rdx * 8]
+        mov       rsi, 1
+        call      _Mix_PlayMusic
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
         section .rodata
 wolfasm_sound_rb:     db  "rb", 0x00
 
@@ -155,5 +222,16 @@ wolfasm_sound_file:   dq  wolfasm_sound_file_0,   \
                           wolfasm_sound_file_2,   \
                           wolfasm_sound_file_3
 
+;; Music files
+wolfasm_music_file_0: db   "./resources/sounds/menu_0.ogg", 0x00
+wolfasm_music_file_1: db   "./resources/sounds/menu_1.ogg", 0x00
+wolfasm_music_file_2: db   "./resources/sounds/menu_2.ogg", 0x00
+wolfasm_music_file_3: db   "./resources/sounds/menu_3.ogg", 0x00
+wolfasm_music_file:   dq    wolfasm_music_file_0,   \
+                            wolfasm_music_file_1,   \
+                            wolfasm_music_file_2,   \
+                            wolfasm_music_file_3
+
         section .bss
 wolfasm_sounds: resq  NB_WOLFASM_SOUNDS
+wolfasm_musics: resq  NB_WOLFASM_MUSICS

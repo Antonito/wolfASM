@@ -22,3 +22,7 @@
 ;; SDL_Texture
 %define SDL_PIXELFORMAT_BGRA32      0x16362004
 %define SDL_TEXTUREACCESS_STREAMING 1
+
+;; SDL_TTF
+%define TTF_STYLE_NORMAL            0x00
+%define TTF_STYLE_UNDERLINE         0x04
