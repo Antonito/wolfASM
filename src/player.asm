@@ -11,7 +11,7 @@
         wolfasm_player_refill_ammo, wolfasm_player_refill_life
         global game_player
 
-        extern map_width, map_height, map
+        extern wolfasm_map_width, wolfasm_map
 
         ;; Lib C functions
         extern _cos, _sin
@@ -57,13 +57,13 @@ wolfasm_player_move_forward:
         cvttsd2si esi, xmm0
 
         ;; Compute map index (y * map_width + x)
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mul       esi
         add       eax, edi
         mov       ecx, eax
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -85,13 +85,13 @@ wolfasm_player_move_forward:
         cvttsd2si rdi, xmm0
 
         ;; Compute map index (y * map_width + x)
-        mov       rax, [rel map_width]
+        mov       rax, [rel wolfasm_map_width]
         mul       esi
         add       rax, rdi
         mov       rcx, rax
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -124,13 +124,13 @@ wolfasm_player_move_backward:
 
 
         ;; Compute map index (y * map_width + x)
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mul       esi
         add       eax, edi
         mov       ecx, eax
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -153,13 +153,13 @@ wolfasm_player_move_backward:
         cvttsd2si esi, xmm0
 
         ;; Compute map index (y * map_width + x)
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mul       edi
         add       eax, esi
         mov       ecx, eax
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 

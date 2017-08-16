@@ -6,7 +6,7 @@
 
         global wolfasm_logic
 
-        extern map_width, map, game_player
+        extern wolfasm_map_width, wolfasm_map, game_player
 
         ;; TODO: rm
         extern _game_logic_cwrapper
@@ -19,7 +19,7 @@ wolfasm_logic:
 .collectable:
         ;; Compute map index (y * map_width + x)
         movsd     xmm0, [rel game_player + wolfasm_player.pos_y]
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         cvtsi2sd  xmm1, rax
         mulsd     xmm0, xmm1
         movsd     xmm1, [rel game_player + wolfasm_player.pos_x]
@@ -27,7 +27,7 @@ wolfasm_logic:
         cvttsd2si rcx, xmm0
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
         lea       rdi, [rax + rcx]
         lea       r8, [rdi + wolfasm_map_case.item]

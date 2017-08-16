@@ -7,8 +7,9 @@
         global wolfasm_raycast, wolfasm_z_buffer
 
         ;; wolfasm symbols
-        extern game_player, map, map_width, wolfasm_put_pixel,  \
-        window_width, window_height, wolfasm_texture
+        extern game_player, wolfasm_map, wolfasm_map_width,   \
+        wolfasm_put_pixel, window_width, window_height,       \
+        wolfasm_texture
 
         ;; C function TODO: rm
         extern wolfasm_raycast_pix_crwapper, _get_color
@@ -198,7 +199,7 @@ wolfasm_raycast:
         ;; Get index
         push      rdx
         xor       rcx, rcx
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mov       esi, [rel map_y]
         mul       esi
         mov       rcx, rax
@@ -206,7 +207,7 @@ wolfasm_raycast:
         pop       rdx
 
         ;; map[mapY * map_width + mapX] > 0
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte cl, [rax + rcx]
         cmp       byte cl, 0
@@ -291,14 +292,14 @@ wolfasm_raycast:
         push      rcx   ;; Save draw_start
         push      rsi   ;; Save draw_end
         xor       rcx, rcx
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mov       esi, [rel map_y]
         mul       esi
         mov       rcx, rax
         add       cx, [rel map_x]
 
         ;; map[mapY * map_width + mapX]
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
         dec       dl      ;; Decrement so texture[0] can be used

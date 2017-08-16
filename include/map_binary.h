@@ -5,6 +5,10 @@
 #pragma clang diagnostic ignored "-Wpacked"
 #endif
 
+//
+// Note: This file should be synced with map.inc
+//
+
 #define WOLFASM_MAP_MAGIC 0xCAFE
 
 typedef struct wolfasm_map_header {
@@ -13,6 +17,9 @@ typedef struct wolfasm_map_header {
   uint32_t height;
   char name[255];
 } __attribute__((packed)) wolfasm_map_header_t;
+
+_Static_assert(sizeof(wolfasm_map_header_t) == 2 + 4 + 4 + 255,
+               "Invalid Map Header Size");
 
 typedef struct wolfasm_map_items_header {
   uint32_t nb_items;

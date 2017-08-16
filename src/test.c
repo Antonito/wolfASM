@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <time.h>
 
-extern uint32_t const map_width __asm__("map_width");
-extern uint32_t const map_height __asm__("map_height");
-extern wolfasm_map_case_t *map __asm__("map");
+extern uint32_t const map_width __asm__("wolfasm_map_width");
+extern uint32_t const map_height __asm__("wolfasm_map_height");
+extern wolfasm_map_case_t *map __asm__("wolfasm_map");
 
 //
 // Prototypes

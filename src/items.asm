@@ -10,7 +10,8 @@
 
         extern wolfasm_items, wolfasm_items_nb
 
-        extern map, map_width, wolfasm_player_refill_ammo,    \
+        extern wolfasm_map, wolfasm_map_width,                \
+        wolfasm_player_refill_ammo,                           \
         wolfasm_player_refill_life, game_player,              \
         wolfasm_put_pixel, window_width, window_height,       \
         wolfasm_z_buffer, wolfasm_texture
@@ -45,7 +46,7 @@ wolfasm_items_init:
         ;; Compute map index (y * map_width + x)
         mov       esi, [rdi + wolfasm_item_s.pos_y]
         mov       r8d, [rdi + wolfasm_item_s.pos_x]
-        mov       eax, [rel map_width]
+        mov       eax, [rel wolfasm_map_width]
         mul       esi
         add       eax, r8d
         mov       edx, eax
@@ -56,7 +57,7 @@ wolfasm_items_init:
         je        .next_loop
 
         ;; Get map index
-        mov       rax, [rel map]
+        mov       rax, [rel wolfasm_map]
         shl       rdx, 4            ;; WOLFASM_MAP_CASE_SIZE
         lea       rax, [rax + rdx + wolfasm_map_case.item]
         mov       [rax], rdi
