@@ -49,7 +49,9 @@ _Static_assert(sizeof(wolfasm_map) ==
 
 char const wolfasm_map_name[255] = "Medium Map";
 
-wolfasm_map_item_t wolfasm_items[] = {};
+wolfasm_map_item_t wolfasm_items[] = {
+    {9, 2, 3, 1, 1, 64.0, 0, 0, 1, 0, -1, ITEM_AMMO, CALLBACK_AMMO},
+    {10, 3, 8, 2, 2, 64.0, 0, 0, 1, 0, -1, ITEM_MEDIKIT, CALLBACK_LIFE}};
 
 uint32_t const wolfasm_items_nb =
     sizeof(wolfasm_items) / sizeof(wolfasm_items[0]);
