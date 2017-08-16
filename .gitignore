@@ -1,5 +1,6 @@
 ## Binary
 wolfasm
+build/*
 
 ## Valgrind ##
 vgcore.*

@@ -63,7 +63,7 @@ wolfasm_player_move_forward:
         mov       ecx, eax
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -91,7 +91,7 @@ wolfasm_player_move_forward:
         mov       rcx, rax
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -130,7 +130,7 @@ wolfasm_player_move_backward:
         mov       ecx, eax
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 
@@ -159,7 +159,7 @@ wolfasm_player_move_backward:
         mov       ecx, eax
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
 

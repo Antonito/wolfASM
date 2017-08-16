@@ -18,7 +18,8 @@
         extern game_loop,                                       \
         wolfasm_init_texture, wolfasm_deinit_texture,           \
         wolfasm_init_weapon, wolfasm_init_sprites,              \
-        wolfasm_deinit_sprites, wolfasm_items_init
+        wolfasm_deinit_sprites, wolfasm_items_init,             \
+        wolfasm_map_init, wolfasm_map_deinit
 
 ;; This function starts a window, and calls the game loop
 wolfasm:
@@ -33,6 +34,7 @@ wolfasm:
 
         ;; Initialize last graphic elements
         call  wolfasm_init_texture
+        call  wolfasm_map_init
         call  wolfasm_items_init
 
 .game_loop:
@@ -43,6 +45,7 @@ wolfasm:
 
         ;; Unload textures
         call  wolfasm_deinit_texture
+        call  wolfasm_map_deinit
 
         ;; Leave program, everything went right
         mov   rax, 0

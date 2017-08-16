@@ -25,6 +25,10 @@ void wolfasm_player_refill_life() __asm__("wolfasm_player_refill_life");
 extern struct wolfasm_item_s wolfasm_items[] __asm__("wolfasm_items");
 extern int32_t wolfasm_items_nb __asm__("wolfasm_items_nb");
 
+extern uint32_t wolfasm_map_width __asm__("map_width");
+extern uint32_t wolfasm_map_height __asm__("map_height");
+extern wolfasm_map_case_t *wolfasm_map __asm__("map");
+
 extern double wolfasm_z_buffer[] __asm__("wolfasm_z_buffer");
 void c_init() {
   // You can initialize stuff before the game loop
@@ -119,7 +123,8 @@ void game_logic_cwrapper(void) {
         if (enemies[i].item->current_anim / enemies[i].item->anim_rate ==
             enemies[i].item->nb_anim - 1) {
           enemies[i].item->stock = 0;
-          map[enemies[i].item->pos_y * map_width + enemies[i].item->pos_x]
+          map[(uint32_t)enemies[i].item->pos_y * map_width +
+              (uint32_t)enemies[i].item->pos_x]
               .enemy = NULL;
         }
         break;
@@ -145,15 +150,15 @@ void game_logic_cwrapper(void) {
 
 // Enemy
 void spawn_enemy(struct wolfasm_enemy_s *enemy) {
-  int32_t x = 0;
-  int32_t y = 0;
+  uint32_t x = 0;
+  uint32_t y = 0;
 
   do {
-    x = rand() % map_width;
-    y = rand() % map_height;
+    x = (uint32_t)rand() % map_width;
+    y = (uint32_t)rand() % map_height;
   } while (map[y * map_width + x].value);
-  enemy->item->pos_x = x;
-  enemy->item->pos_y = y;
+  enemy->item->pos_x = (int32_t)x;
+  enemy->item->pos_y = (int32_t)y;
   enemy_init_single(enemy);
 }
 
@@ -163,7 +168,8 @@ void enemy_init_single(struct wolfasm_enemy_s *enemy) {
 
   enemy->state = ENEMY_STILL;
   enemy->life = 100;
-  map[enemy->item->pos_y * map_width + enemy->item->pos_x].enemy = enemy;
+  map[(uint32_t)enemy->item->pos_y * map_width + (uint32_t)enemy->item->pos_x]
+      .enemy = enemy;
   enemy->item->stock = -1;
   enemy->item->texture_table = enemy_animation_shoot;
   enemy->item->nb_anim = 3;
@@ -216,13 +222,13 @@ void player_shoot(void) {
       // Detect if any enemy there
       {
         double const inc_base = 0.0001;
-        int32_t pos = 0;
+        uint32_t pos = 0;
         double inc = inc_base;
         do {
-          int32_t const pos_x =
-              (int)(game_player.pos_x + (double)game_player.dir_x * inc);
-          int32_t const pos_y =
-              (int)(game_player.pos_y + (double)game_player.dir_y * inc);
+          uint32_t const pos_x =
+              (uint32_t)(game_player.pos_x + (double)game_player.dir_x * inc);
+          uint32_t const pos_y =
+              (uint32_t)(game_player.pos_y + (double)game_player.dir_y * inc);
           pos = pos_y * map_width + pos_x;
           if (map[pos].enemy && map[pos].enemy->life > 0) {
             assert(map[pos].value == 0);
@@ -255,6 +261,7 @@ extern void
 wolfasm_display_text(char const *text, SDL_Rect const *pos,
                      uint32_t cololor) __asm__("wolfasm_display_text");
 
+void wolfasm_regulate_framerate(uint32_t fps);
 void wolfasm_regulate_framerate(uint32_t fps) {
   static uint32_t old_ticks = 0;
   uint32_t ticks = SDL_GetTicks();

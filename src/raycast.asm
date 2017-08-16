@@ -206,7 +206,7 @@ wolfasm_raycast:
         pop       rdx
 
         ;; map[mapY * map_width + mapX] > 0
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte cl, [rax + rcx]
         cmp       byte cl, 0
@@ -298,7 +298,7 @@ wolfasm_raycast:
         add       cx, [rel map_x]
 
         ;; map[mapY * map_width + mapX]
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 5            ;; WOLFASM_MAP_CASE_SIZE
         mov       byte dl, [rax + rcx]
         dec       dl      ;; Decrement so texture[0] can be used

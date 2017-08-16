@@ -27,7 +27,7 @@ wolfasm_logic:
         cvttsd2si rcx, xmm0
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rcx, 4            ;; WOLFASM_MAP_CASE_SIZE
         lea       rdi, [rax + rcx]
         lea       r8, [rdi + wolfasm_map_case.item]

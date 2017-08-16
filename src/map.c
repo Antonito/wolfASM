@@ -1,67 +1,72 @@
-// Temporary file, will be removed when I have a map loader
-
 #include "cdefs.h"
+#include "map_binary.h"
+#include <errno.h>
+#include <fcntl.h>
 #include <stdint.h>
+#include <unistd.h>
 
-#define MAP_NUMBER 1
+void wolfasm_map_init(void) __asm__("wolfasm_map_init");
+void wolfasm_map_deinit(void) __asm__("wolfasm_map_deinit");
 
-extern uint32_t const map_width;
-extern uint32_t const map_height;
-extern wolfasm_map_case_t map[];
+extern uint32_t wolfasm_map_width __asm__("map_width");
+extern uint32_t wolfasm_map_height __asm__("map_height");
+extern wolfasm_map_case_t *wolfasm_map __asm__("map");
 
-#if MAP_NUMBER == 1
+uint32_t wolfasm_map_width = 0;
+uint32_t wolfasm_map_height = 0;
+wolfasm_map_case_t *wolfasm_map = NULL;
 
-#define MAP_WIDTH (8)
-#define MAP_HEIGHT (7)
+void wolfasm_map_init(void) {
+  char const *name = "./resources/map/map_1.bin";
 
-// clang-format off
-wolfasm_map_case_t  map[] __asm__("map") = {
-    {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL},
-    {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}};
-//clang-format on
+  int rc = 0;
+  int fd = open(name, O_RDONLY);
 
-#elif MAP_NUMBER == 2
+  if (fd == -1) {
+    goto err;
+  }
 
-#define MAP_WIDTH (24)
-#define MAP_HEIGHT (24)
+  // Read header
+  {
+    wolfasm_map_header_t header;
+    rc = (int32_t)read(fd, &header, sizeof(header));
+    if (rc == -1) {
+      goto err;
+    }
+    if (header.magic != WOLFASM_MAP_MAGIC) {
+      fprintf(stderr, "Invalid file\n");
+      exit(1);
+    }
+    wolfasm_map_width = header.width;
+    wolfasm_map_height = header.height;
+  }
+  {
+    size_t const map_size =
+        wolfasm_map_width * wolfasm_map_height * sizeof(wolfasm_map_case_t);
+    wolfasm_map = malloc(map_size);
+    if (!wolfasm_map) {
+      goto err;
+    }
 
-// clang-format off
-wolfasm_map_case_t  map[] __asm__("map") = {
-  {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {8, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {8, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {8, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {7, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {
-  6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {
-  8, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {
-  6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {5, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {6, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {0, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {
-  4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {4, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {1, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {2, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}, {3, NULL, NULL, NULL}
-};
-// clang-format on
-#endif
+    rc = (int32_t)read(fd, wolfasm_map, map_size);
+    if (rc == -1) {
+      goto err;
+    }
 
-uint32_t const map_width __asm__("map_width") = MAP_WIDTH;
-uint32_t const map_height __asm__("map_height") = MAP_HEIGHT;
+    rc = close(fd);
+    if (rc == -1) {
+      goto err;
+    }
+    return;
+  err:
+    fprintf(stderr, "Cannot load map '%s' : %s\n", name, strerror(errno));
+    exit(1);
+  }
+}
 
-_Static_assert(sizeof(map) == sizeof(map[0]) * MAP_WIDTH * MAP_HEIGHT,
-               "Invalid map size");
+void wolfasm_map_deinit(void) {
+  free(wolfasm_map);
+  wolfasm_map = NULL;
+  wolfasm_map_width = 0;
+  wolfasm_map_height = 0;
+}

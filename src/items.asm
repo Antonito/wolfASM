@@ -54,7 +54,7 @@ wolfasm_items_init:
         je        .next_loop
 
         ;; Get map index
-        lea       rax, [rel map]
+        mov       rax, [rel map]
         shl       rdx, 4            ;; WOLFASM_MAP_CASE_SIZE
         lea       rax, [rax + rdx + wolfasm_map_case.item]
         mov       [rax], rdi

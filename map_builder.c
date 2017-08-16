@@ -4,6 +4,7 @@
 //
 
 #include "cdefs.h"
+#include "map_binary.h"
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -19,18 +20,7 @@
 extern uint32_t const wolfasm_map_width;
 extern uint32_t const wolfasm_map_height;
 extern wolfasm_map_case_t const *wolfasm_map;
-
-#define WOLFASM_MAP_MAGIC 0xCAFE
-
-typedef struct wolfasm_map_header {
-  uint16_t magic;
-  uint32_t width;
-  uint32_t height;
-} __attribute__((packed)) wolfasm_map_header_t;
-
-typedef struct wolfasm_map_items_header {
-  uint32_t nb_items;
-} __attribute__((packed)) wolfasm_map_items_header;
+extern char const wolfasm_map_name[255];
 
 //
 // Create the file
@@ -46,8 +36,9 @@ static int32_t create_map(char const *output_file) {
 
   // Write map header
   {
-    wolfasm_map_header_t header = {WOLFASM_MAP_MAGIC, wolfasm_map_width,
-                                   wolfasm_map_height};
+    wolfasm_map_header_t header = {
+        WOLFASM_MAP_MAGIC, wolfasm_map_width, wolfasm_map_height, {0}};
+    strncpy(header.name, wolfasm_map_name, sizeof(header.name) - 1);
     rc = (int32_t)write(fd, &header, sizeof(header));
     if (rc == -1) {
       goto err;
@@ -63,7 +54,8 @@ static int32_t create_map(char const *output_file) {
     }
   }
   // Write map
-  rc = (int32_t)write(fd, map, sizeof(map));
+  rc = (int32_t)write(fd, map,
+                      sizeof(map[0]) * wolfasm_map_width * wolfasm_map_height);
 
   // Write items header
   {
