@@ -229,7 +229,8 @@ wolfasm_map_deinit:
         section .rodata
 error_msg:            db    "Cannot load map", 0x00
 item_animation_table: dd    NO_TABLE, TABLE_ENEMY_ANIMATION_SHOOT
-item_callback_table:  dq    wolfasm_player_refill_life, wolfasm_player_refill_ammo
+item_callback_table:  dq    wolfasm_player_refill_life, \
+                            wolfasm_player_refill_ammo
 
         section .data
 wolfasm_map_width:    dd    0
@@ -253,4 +254,17 @@ iend
 
 wolfasm_map_item:
 istruc wolfasm_map_item_t
+  at   wolfasm_map_item_t.texture,              dd    0
+  at   wolfasm_map_item_t.pos_x,                dd    0
+  at   wolfasm_map_item_t.pos_y,                dd    0
+  at   wolfasm_map_item_t.width_div,            dd    0
+  at   wolfasm_map_item_t.height_div,           dd    0
+  at   wolfasm_map_item_t.height_move,          dq    0
+  at   wolfasm_map_item_t.current_anim,         dd    0
+  at   wolfasm_map_item_t.nb_anim,              dd    0
+  at   wolfasm_map_item_t.anim_rate,            dd    0
+  at   wolfasm_map_item_t.texture_table,        dd    0
+  at   wolfasm_map_item_t.stock,                dd    0
+  at   wolfasm_map_item_t.type,                 dd    0
+  at   wolfasm_map_item_t.callback,             dd    0
 iend
