@@ -5,8 +5,10 @@
         %include "enemy.inc"
         %include "player.inc"
 
-        global wolfasm_items_init, wolfasm_items,             \
-        wolfasm_items_nb, wolfasm_display_items_and_mobs
+        global wolfasm_items_init ,                           \
+        wolfasm_display_items_and_mobs
+
+        extern wolfasm_items, wolfasm_items_nb
 
         extern map, map_width, wolfasm_player_refill_ammo,    \
         wolfasm_player_refill_life, game_player,              \
@@ -33,7 +35,7 @@ wolfasm_items_init:
         je        .end_loop
 
         ;; Get element offset
-        lea       rdi, [rel wolfasm_items]
+        mov       rdi, [rel wolfasm_items]
         mov       eax, 64
         mov       edx, ecx
         mul       edx
@@ -86,7 +88,7 @@ wolfasm_display_items_and_mobs:
         mov       [rsi], ecx
 
         ;; Calculate distance
-        lea       r9, [rel wolfasm_items]
+        mov       r9, [rel wolfasm_items]
         mov       eax, 64
         mov       edx, ecx
         mul       edx
@@ -133,7 +135,7 @@ wolfasm_display_items_and_mobs:
         lea       r8, [rel wolfasm_sprite_order]
         mov       r8d, [r8 + rcx * 4]
         ;; Get item
-        lea       r9, [rel wolfasm_items]
+        mov       r9, [rel wolfasm_items]
         mov       eax, 64
         mul       r8d
         lea       r8, [r9 + rax]
@@ -437,71 +439,6 @@ wolfasm_display_items_and_mobs:
         pop       rbp
         emms
         ret
-
-
-        section .data
-wolfasm_items:
-istruc wolfasm_item_s
-      at wolfasm_item_s.texture,        dd    11
-      at wolfasm_item_s.pos_x,          dd    4
-      at wolfasm_item_s.pos_y,          dd    4
-      at wolfasm_item_s.width_div,      dd    1
-      at wolfasm_item_s.height_div,     dd    1
-      at wolfasm_item_s.height_move,    dq    1.0
-      at wolfasm_item_s.current_anim,   dd    0
-      at wolfasm_item_s.nb_anim,        dd    ENEMY_ANIMATION_SHOOT_NB
-      at wolfasm_item_s.anim_rate,      dd    10
-      at wolfasm_item_s.texture_table,  dq    enemy_animation_shoot
-      at wolfasm_item_s.stock,          dd    -1
-      at wolfasm_item_s.type,           dd    ITEM_ENEMY
-      at wolfasm_item_s.callback,       dq    0
-iend
-istruc wolfasm_item_s
-      at wolfasm_item_s.texture,        dd    9
-      at wolfasm_item_s.pos_x,          dd    4
-      at wolfasm_item_s.pos_y,          dd    3
-      at wolfasm_item_s.width_div,      dd    2
-      at wolfasm_item_s.height_div,     dd    2
-      at wolfasm_item_s.height_move,    dq    64.0
-      at wolfasm_item_s.current_anim,   dd    0
-      at wolfasm_item_s.nb_anim,        dd    0
-      at wolfasm_item_s.anim_rate,      dd    1
-      at wolfasm_item_s.texture_table,  dq    0
-      at wolfasm_item_s.stock,          dd    5
-      at wolfasm_item_s.type,           dd    ITEM_AMMO
-      at wolfasm_item_s.callback,       dq    wolfasm_player_refill_ammo
-iend
-istruc wolfasm_item_s
-      at wolfasm_item_s.texture,        dd    9
-      at wolfasm_item_s.pos_x,          dd    2
-      at wolfasm_item_s.pos_y,          dd    3
-      at wolfasm_item_s.width_div,      dd    1
-      at wolfasm_item_s.height_div,     dd    1
-      at wolfasm_item_s.height_move,    dq    64.0
-      at wolfasm_item_s.current_anim,   dd    0
-      at wolfasm_item_s.nb_anim,        dd    0
-      at wolfasm_item_s.anim_rate,      dd    1
-      at wolfasm_item_s.texture_table,  dq    0
-      at wolfasm_item_s.stock,          dd    -1 ; 5
-      at wolfasm_item_s.type,           dd    ITEM_AMMO
-      at wolfasm_item_s.callback,       dq    wolfasm_player_refill_ammo
-iend
-istruc wolfasm_item_s
-      at wolfasm_item_s.texture,        dd    10
-      at wolfasm_item_s.pos_x,          dd    4
-      at wolfasm_item_s.pos_y,          dd    2
-      at wolfasm_item_s.width_div,      dd    2
-      at wolfasm_item_s.height_div,     dd    2
-      at wolfasm_item_s.height_move,    dq    64.0
-      at wolfasm_item_s.current_anim,   dd    0
-      at wolfasm_item_s.nb_anim,        dd    0
-      at wolfasm_item_s.anim_rate,      dd    1
-      at wolfasm_item_s.texture_table,  dq    0
-      at wolfasm_item_s.stock,          dd    -1 ; 5
-      at wolfasm_item_s.type,           dd    ITEM_MEDIKIT
-      at wolfasm_item_s.callback,       dq    wolfasm_player_refill_life
-iend
-wolfasm_items_nb:                       dd    4
 
       section .bss
 wolfasm_sprite_order:                   resd   4

@@ -19,8 +19,10 @@
 //
 extern uint32_t const wolfasm_map_width;
 extern uint32_t const wolfasm_map_height;
-extern wolfasm_map_case_t const *wolfasm_map;
+extern wolfasm_map_case_t const wolfasm_map[];
 extern char const wolfasm_map_name[255];
+extern wolfasm_map_item_t wolfasm_items[];
+extern uint32_t const wolfasm_items_nb;
 
 //
 // Create the file
@@ -48,27 +50,27 @@ static int32_t create_map(char const *output_file) {
   // Check map
   for (uint32_t x = 0; x < wolfasm_map_width; ++x) {
     for (uint32_t y = 0; y < wolfasm_map_height; ++y) {
-      assert(map[y * wolfasm_map_width + x].item == NULL);
-      assert(map[y * wolfasm_map_width + x].enemy == NULL);
-      assert(map[y * wolfasm_map_width + x].padding == NULL);
+      assert(wolfasm_map[y * wolfasm_map_width + x].item == NULL);
+      assert(wolfasm_map[y * wolfasm_map_width + x].enemy == NULL);
+      assert(wolfasm_map[y * wolfasm_map_width + x].padding == NULL);
     }
   }
   // Write map
-  rc = (int32_t)write(fd, map,
-                      sizeof(map[0]) * wolfasm_map_width * wolfasm_map_height);
+  rc = (int32_t)write(fd, wolfasm_map,
+                      sizeof(wolfasm_map[0]) * wolfasm_map_width *
+                          wolfasm_map_height);
 
   // Write items header
   {
-    wolfasm_map_items_header header = {0};
+    wolfasm_map_items_header header = {wolfasm_items_nb};
     rc = (int32_t)write(fd, &header, sizeof(header));
     if (rc == -1) {
       goto err;
     }
   }
   // Write items
-  //
-  // TODO
-  //
+  rc = (int32_t)write(fd, wolfasm_items,
+                      sizeof(wolfasm_items[0]) * wolfasm_items_nb);
 
   // We're done with generating the map
   rc = close(fd);

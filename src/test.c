@@ -7,6 +7,10 @@
 #include <assert.h>
 #include <time.h>
 
+extern uint32_t const map_width __asm__("map_width");
+extern uint32_t const map_height __asm__("map_height");
+extern wolfasm_map_case_t *map __asm__("map");
+
 //
 // Prototypes
 //
@@ -22,7 +26,7 @@ void init_weapons(void);
 
 void wolfasm_player_refill_ammo() __asm__("wolfasm_player_refill_ammo");
 void wolfasm_player_refill_life() __asm__("wolfasm_player_refill_life");
-extern struct wolfasm_item_s wolfasm_items[] __asm__("wolfasm_items");
+extern struct wolfasm_item_s *wolfasm_items __asm__("wolfasm_items");
 extern int32_t wolfasm_items_nb __asm__("wolfasm_items_nb");
 
 extern uint32_t wolfasm_map_width __asm__("map_width");
