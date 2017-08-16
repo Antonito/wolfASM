@@ -152,6 +152,21 @@ void game_logic_cwrapper(void) {
   }
 }
 
+// Player
+void spawn_player(void);
+void spawn_player(void) {
+  uint32_t x = 0;
+  uint32_t y = 0;
+
+  do {
+    x = (uint32_t)rand() % map_width;
+    y = (uint32_t)rand() % map_height;
+  } while (map[y * map_width + x].value || map[y * map_width + x].enemy);
+  game_player.pos_x = (double)x;
+  game_player.pos_y = (double)y;
+  // TODO: Reinit player's data
+}
+
 // Enemy
 void spawn_enemy(struct wolfasm_enemy_s *enemy) {
   uint32_t x = 0;

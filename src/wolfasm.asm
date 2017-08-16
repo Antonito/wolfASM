@@ -21,25 +21,34 @@
         wolfasm_deinit_sprites, wolfasm_items_init,             \
         wolfasm_map_init, wolfasm_map_deinit
 
+        ;; TODO: rm
+        extern _spawn_player
+
 ;; This function starts a window, and calls the game loop
 wolfasm:
         push  rbp
         mov   rbp, rsp
 
-        ;; TODO: Load map here
-
+        sub   rsp, 8
+        push  rdi
 .game_data_init:
         ;; Initialize weapons
         call  wolfasm_init_weapon
 
         ;; Initialize last graphic elements
         call  wolfasm_init_texture
+
+        ;; Load map
+        pop   rdi
+        add   rsp, 8
         call  wolfasm_map_init
+
         call  wolfasm_items_init
 
 .game_loop:
         ;; Starts the game loop
         call  _c_init   ;; TODO: rm
+        call  _spawn_player
         call  game_loop
         call  _c_deinit ;; TODO: rm
 

@@ -1,15 +1,22 @@
 #include "cdefs.h"
+#include <assert.h>
+#include <dirent.h>
 #include <time.h>
 
 extern void render_sprite(wolfasm_sprite_t *sprite, int x, int y,
                           SDL_Rect *clip) __asm__("wolfasm_render_sprite");
-extern void wolfasm(void) __asm__("wolfasm");
+extern void wolfasm(char const *map) __asm__("wolfasm");
 extern void render_button(char const *text, int32_t const x, int32_t y,
                           int32_t width,
                           bool selected) __asm__("wolfasm_menu_render_button");
 extern void wolfasm_menu_play_music(void) __asm__("wolfasm_menu_play_music");
 
-enum wolfasm_menus { MENU_MAIN, MENU_MULTIPLAYER, NB_MENUS };
+enum wolfasm_menus {
+  MENU_MAIN,
+  MENU_MULTIPLAYER,
+  MENU_SELECT_MAP_SOLO,
+  NB_MENUS
+};
 
 enum wolfasm_buttons_main {
   BUTTON_PLAY = 0,
@@ -25,6 +32,12 @@ enum wolfasm_buttons_mutliplayer {
   NB_BUTTON_MULTIPLAYER
 };
 
+enum wolfasm_buttons_select_map_solo {
+  BUTTON_SM_SOLO_MAP = 0,
+  BUTTON_SM_SOLO_BACK,
+  NB_BUTTON_SELECT_MAP_SOLO
+};
+
 //
 // Menu
 //
@@ -33,11 +46,49 @@ static enum wolfasm_menus menu = MENU_MAIN;
 static int32_t wolfasm_menu_nb_buttons = NB_BUTTON_MAIN;
 static int32_t selected_button = BUTTON_PLAY;
 
+static char const *wolfasm_selected_map = NULL;
+static char const *wolfasm_maps[255] = {0};
+static int32_t wolfasm_current_map = 0;
+static int32_t wolfasm_nb_maps = 0;
+
 // Main Menu
+static void wolfasm_load_maps() {
+  DIR *d = opendir("./resources/map/");
+  struct dirent *dir = NULL;
+
+  wolfasm_nb_maps = 0;
+  if (!d) {
+    goto err;
+  }
+  while ((dir = readdir(d))) {
+    if (dir->d_name[0] != '.') {
+      if (wolfasm_nb_maps == 255) {
+        goto err;
+      }
+      free(wolfasm_maps[wolfasm_nb_maps]);
+      wolfasm_maps[wolfasm_nb_maps] = strdup(dir->d_name);
+      if (!wolfasm_maps[wolfasm_nb_maps]) {
+        goto err;
+      }
+      ++wolfasm_nb_maps;
+    }
+  }
+  closedir(d);
+  if (wolfasm_nb_maps) {
+    wolfasm_current_map = 0;
+    wolfasm_selected_map = wolfasm_maps[wolfasm_current_map];
+  }
+  return;
+err:
+  fprintf(stderr, "Cannot load maps\n");
+  exit(1);
+}
+
 static void wolfasm_main_play() {
-  Mix_HaltMusic();
-  wolfasm();
-  wolfasm_menu_play_music();
+  menu = MENU_SELECT_MAP_SOLO;
+  wolfasm_menu_nb_buttons = NB_BUTTON_SELECT_MAP_SOLO;
+  selected_button = 0;
+  wolfasm_load_maps();
   SDL_Delay(120);
 }
 static void wolfasm_main_multiplayer() {
@@ -78,15 +129,45 @@ static void wolfasm_multiplayer_buttons() {
                 selected_button == BUTTON_EXIT);
 }
 
+// Select Map Solo
+static void wolfasm_sm_solo_map() {
+  char filename[512];
+
+  strncpy(filename, "./resources/map/", sizeof(filename));
+  strncat(filename, wolfasm_selected_map, sizeof(filename));
+  Mix_HaltMusic();
+  wolfasm(filename);
+  wolfasm_menu_play_music();
+  SDL_Delay(200);
+}
+static void wolfasm_sm_solo_back() {
+  menu = MENU_MAIN;
+  wolfasm_menu_nb_buttons = NB_BUTTON_MAIN;
+  selected_button = 0;
+  SDL_Delay(120);
+}
+
+static void wolfasm_sm_solo_buttons() {
+  char buff[255 + 1 + 4];
+  snprintf(buff, sizeof(buff), "< %s >", wolfasm_selected_map);
+  render_button(buff, window_width / 2, window_height / 2, window_width / 8,
+                selected_button == BUTTON_SM_SOLO_MAP);
+  render_button("Back", window_width / 2,
+                window_height / 2 + 1 * (window_height / 8), window_width / 8,
+                selected_button == BUTTON_SM_SOLO_BACK);
+}
+
 static void (*callbacks_main_menu[])() = {
     wolfasm_main_play, wolfasm_main_multiplayer, wolfasm_main_exit,
     wolfasm_main_buttons};
 static void (*callbacks_multiplayer_menu[])() = {
     wolfasm_multiplayer_host, wolfasm_multiplayer_connect,
     wolfasm_multiplayer_back, wolfasm_multiplayer_buttons};
+static void (*callback_sm_solo[])() = {
+    wolfasm_sm_solo_map, wolfasm_sm_solo_back, wolfasm_sm_solo_buttons};
 
-static void (**callbacks[])() = {&callbacks_main_menu,
-                                 &callbacks_multiplayer_menu};
+static void (**callbacks[])() = {
+    &callbacks_main_menu, &callbacks_multiplayer_menu, &callback_sm_solo};
 
 int wolfasm_menu(void) {
   srand((unsigned int)time(NULL));
@@ -110,10 +191,8 @@ int wolfasm_menu(void) {
         case SDLK_RIGHT:
           break;
         case SDLK_UP:
-          SDL_Delay(10);
           break;
         case SDLK_DOWN:
-          SDL_Delay(10);
           break;
         case SDLK_RETURN:
           break;
@@ -124,8 +203,25 @@ int wolfasm_menu(void) {
 
         // Menu controls
         case SDLK_LEFT:
+          if (menu == MENU_SELECT_MAP_SOLO) {
+            --wolfasm_current_map;
+            if (wolfasm_current_map < 0) {
+              assert(wolfasm_nb_maps != 0);
+              wolfasm_current_map = wolfasm_nb_maps - 1;
+            }
+            wolfasm_selected_map = wolfasm_maps[wolfasm_current_map];
+            SDL_Delay(200);
+          }
           break;
         case SDLK_RIGHT:
+          if (menu == MENU_SELECT_MAP_SOLO) {
+            ++wolfasm_current_map;
+            if (wolfasm_current_map == wolfasm_nb_maps) {
+              wolfasm_current_map = 0;
+            }
+            wolfasm_selected_map = wolfasm_maps[wolfasm_current_map];
+            SDL_Delay(200);
+          }
           break;
         case SDLK_UP:
           if (selected_button == 0) {

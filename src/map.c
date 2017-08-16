@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-void wolfasm_map_init(void) __asm__("wolfasm_map_init");
+void wolfasm_map_init(char const *name) __asm__("wolfasm_map_init");
 void wolfasm_map_deinit(void) __asm__("wolfasm_map_deinit");
 
 extern uint32_t wolfasm_map_width __asm__("map_width");
@@ -32,9 +32,7 @@ static void (*item_callbacks[])() = {
 static int32_t *item_animation_table[] = {[TABLE_ENEMY_ANIMATION_SHOOT] =
                                               enemy_animation_shoot};
 
-void wolfasm_map_init(void) {
-  char const *name = "./resources/map/map_1.bin";
-
+void wolfasm_map_init(char const *name) {
   int rc = 0;
   int fd = open(name, O_RDONLY);
 
