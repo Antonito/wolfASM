@@ -14,7 +14,7 @@ struc wolfasm_item_s
     .callback       resq    1
 endstruc
 
-%define WOLFASM_MAP_ITEM  (4 * 10 + 8 * 3)
+%define WOLFASM_ITEM_SIZE  (4 * 10 + 8 * 3)
 
 %define ITEM_AMMO       0
 %define ITEM_MEDIKIT    1

@@ -47,6 +47,9 @@ typedef struct wolfasm_map_item {
   enum wolfasm_item_callbacks callback;
 } __attribute__((packed)) wolfasm_map_item_t;
 
+_Static_assert(sizeof(wolfasm_map_item_t) == 4 * 12 + 8,
+               "Invalid Map Item Size");
+
 #if defined __clang__
 #pragma clang diagnostic pop
 #endif
