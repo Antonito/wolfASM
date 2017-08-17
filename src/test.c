@@ -291,3 +291,14 @@ void wolfasm_regulate_framerate(uint32_t fps) {
   }
   old_ticks = ticks;
 }
+
+// Network
+void wolfasm_host_game(char const *map, uint16_t const port);
+void wolfasm_host_game(char const *map, uint16_t const port) {
+  printf("Hosting %s on port %d\n", map, port);
+}
+
+void wolfasm_join_game(char const *addr, uint16_t const port);
+void wolfasm_join_game(char const *addr, uint16_t const port) {
+  printf("Joining game on %s:%d\n", addr, port);
+}
