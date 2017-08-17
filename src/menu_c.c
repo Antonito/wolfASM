@@ -27,9 +27,9 @@ extern int32_t wolfasm_menu_nb_buttons __asm__("wolfasm_menu_nb_buttons");
 extern int32_t selected_button __asm__("selected_button");
 
 extern char const *wolfasm_selected_map __asm__("wolfasm_selected_map");
-static char const *wolfasm_maps[255] = {0};
-static int32_t wolfasm_current_map = 0;
-static int32_t wolfasm_nb_maps = 0;
+extern char const *wolfasm_maps[255] __asm__("wolfasm_maps");
+extern int32_t wolfasm_current_map __asm__("wolfasm_current_map");
+extern int32_t wolfasm_nb_maps __asm__("wolfasm_nb_maps");
 
 extern char wolfasm_connect[255] __asm__("wolfasm_connect");
 extern int32_t wolfasm_connect_len __asm__("wolfasm_connect_len");
@@ -42,40 +42,18 @@ extern int32_t
 extern int32_t *selected_text_field_len __asm__("selected_text_field_len");
 extern char *selected_text_field __asm__("selected_text_field");
 
-// Main Menu
-void wolfasm_load_maps() {
-  DIR *d = opendir("./resources/map/");
-  struct dirent *dir = NULL;
-
-  wolfasm_nb_maps = 0;
-  if (!d) {
-    goto err;
+// Wrapper for struct dirent
+extern char const *wolfasm_read_dir(DIR *d) __asm__("wolfasm_read_dir");
+char const *wolfasm_read_dir(DIR *d) {
+  static struct dirent *dir = NULL;
+  dir = readdir(d);
+  if (dir) {
+    return dir->d_name;
   }
-  while ((dir = readdir(d))) {
-    if (dir->d_name[0] != '.') {
-      if (wolfasm_nb_maps == 255) {
-        goto err;
-      }
-      free(wolfasm_maps[wolfasm_nb_maps]);
-      wolfasm_maps[wolfasm_nb_maps] = strdup(dir->d_name);
-      if (!wolfasm_maps[wolfasm_nb_maps]) {
-        goto err;
-      }
-      ++wolfasm_nb_maps;
-    }
-  }
-  closedir(d);
-  if (wolfasm_nb_maps) {
-    wolfasm_current_map = 0;
-    wolfasm_selected_map = wolfasm_maps[wolfasm_current_map];
-  }
-  return;
-
-err:
-  fprintf(stderr, "Cannot load maps\n");
-  exit(1);
+  return NULL;
 }
 
+// Main Menu
 extern void (**callbacks[])() __asm__("callbacks");
 
 int wolfasm_menu(void) {

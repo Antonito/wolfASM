@@ -7,7 +7,8 @@
         wolfasm_regulate_framerate
 
         extern gui_font, wolfasm_display_text, window_height,   \
-        window_width, wolfasm, wolfasm_menu_play_music
+        window_width, wolfasm, wolfasm_menu_play_music,         \
+        wolfasm_read_dir
 
         ;; SDL functions
         extern _TTF_SetFontStyle, _Mix_HaltMusic,               \
@@ -16,11 +17,12 @@
 
         ;; LibC functions
         extern _strncpy, _strncat, _snprintf, _strtol, _memset, \
-        _strlen
+        _strlen, _printf, _exit, _opendir, _readdir, _free,     \
+        _strdup, _closedir
 
         ;; TODO: rm
-        global selected_text_field_max_len, selected_text_field_len, selected_text_field, wolfasm_connect, wolfasm_connect_len, wolfasm_port, wolfasm_port_len, callbacks_main_menu, menu, selected_button, wolfasm_menu_nb_buttons, running, callback_sm_solo, wolfasm_selected_map, callbacks_multiplayer_menu, callback_mp_co, callback_mp_host, callbacks, wolfasm_regulate_framerate
-        extern _wolfasm_load_maps, _wolfasm_join_game, _wolfasm_host_game
+        global selected_text_field_max_len, selected_text_field_len, selected_text_field, wolfasm_connect, wolfasm_connect_len, wolfasm_port, wolfasm_port_len, callbacks_main_menu, menu, selected_button, wolfasm_menu_nb_buttons, running, callback_sm_solo, wolfasm_selected_map, callbacks_multiplayer_menu, callback_mp_co, callback_mp_host, callbacks, wolfasm_regulate_framerate, wolfasm_maps, wolfasm_nb_maps, wolfasm_load_maps, wolfasm_current_map
+        extern _wolfasm_join_game, _wolfasm_host_game, _print_dir
 
         section .text
 wolfasm_regulate_framerate:
@@ -54,6 +56,98 @@ wolfasm_regulate_framerate:
         pop       rbp
         emms
         ret
+
+wolfasm_load_maps:
+        push      rbp
+        mov       rbp, rsp
+
+        lea       rdi, [rel filename_path]
+        call      _opendir
+        mov       dword [rel wolfasm_nb_maps], 0
+
+        cmp       rax, 0
+        je        .err
+        mov       rdi, rax
+
+        sub       rsp, 8
+        push      rdi
+.loop:
+        call      wolfasm_read_dir
+        cmp       rax, 0
+        je        .loop_end
+
+        push      rdi
+        push      rax
+
+        mov       rdi, found_str
+        mov       rsi, rax
+        call      _printf
+
+        pop       rax
+        pop       rdi
+
+        cmp       byte [rax], '.'
+        je        .next_loop
+
+        ;; Check that we can still read files
+        mov       ecx, [rel wolfasm_nb_maps]
+        cmp       ecx, 255
+        jge       .err
+
+        sub       rsp, 8
+        push      rax
+
+        ;; Free current string
+        lea       rdi, [rel wolfasm_maps]
+        mov       rdi, [rdi + rcx * 8]
+        call      _free
+
+        pop       rax
+        add       rsp, 8
+
+        lea       rdi, [rax]
+        call      _strdup
+
+        ;; Check if string is correct
+        cmp       rax, 0
+        je        .err
+
+        ;; Save string
+        lea       rdi, [rel wolfasm_maps]
+        mov       ecx, [rel wolfasm_nb_maps]
+        mov       qword [rdi + rcx * 8], rax
+
+        inc       ecx
+        mov       dword [rel wolfasm_nb_maps], ecx
+.next_loop:
+        mov       rdi, [rsp]
+        jmp       .loop
+
+.loop_end:
+        pop       rdi
+        add       rsp, 8
+
+        call      _closedir
+
+        mov       eax, [rel wolfasm_nb_maps]
+        cmp       eax, 0
+        je        .no_update
+
+        mov       dword [rel wolfasm_current_map], 0
+        lea       rdi, [rel wolfasm_maps]
+        mov       rax, [rdi]
+        mov       qword [rel wolfasm_selected_map], rax
+
+
+.no_update:
+        mov       rsp, rbp
+        pop       rbp
+        ret
+.err:
+        lea       rdi, [rel loading_error_msg]
+        call      _printf
+        mov       rdi, 1
+        call      _exit
 
 ;; void render_button(char const *text, int32_t const x, int32_t y, int32_t width, bool selected)
 wolfasm_menu_render_button:
@@ -137,7 +231,7 @@ wolfasm_main_play:
         mov     dword [rel menu], MENU_SELECT_MAP_SOLO
         mov     dword [rel wolfasm_menu_nb_buttons], NB_BUTTON_SELECT_MAP_SOLO
         mov     dword [rel selected_button], 0
-        call    _wolfasm_load_maps
+        call    wolfasm_load_maps
 
         mov     rsp, rbp
         pop     rbp
@@ -326,7 +420,7 @@ wolfasm_multiplayer_host:
         mov     qword [rel selected_text_field], rdi
 
         ;; Load maps
-        call    _wolfasm_load_maps
+        call    wolfasm_load_maps
         ;; Start handling text input
         call    _SDL_StartTextInput
 
@@ -752,6 +846,8 @@ wolfasm_multiplayer_host_buttons:
 
 
         section .rodata
+        ;; TODO: rm
+        found_str: db "Found %s", 0x0A, 0x00
 ;; Text strings
 play_txt:               db      "Play", 0x00
 multiplayer_txt:        db      "Multiplayer", 0x00
@@ -763,6 +859,7 @@ host_in_txt:            db      "Host: ", 0x00
 port_in_txt:            db      "Port: ", 0x00
 filename_path:          db      "./resources/map/", 0x00
 file_fmt:               db      "< %s >", 0x00
+loading_error_msg:      db      "Cannot load maps", 0x0A, 0x00
 
 ;; Callbacks
 callbacks_main_menu:    dq      wolfasm_main_play,                    \
@@ -805,6 +902,10 @@ running:                          db      1
 
 cur_time:                         dq      0.0
 old_time:                         dq      0.0
+
+wolfasm_nb_maps:                  dd      0
+wolfasm_current_map:              dd      0
+wolfasm_maps:           times 255 dq      0
 
         section .bss
 wolfasm_button_rect:  resd   4
