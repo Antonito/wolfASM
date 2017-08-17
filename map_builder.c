@@ -14,8 +14,8 @@
 #include <unistd.h>
 
 //
-// You must compile this file with your own map.c
-// Your file must declare the following symbols
+// You MUST compile this file with your own map.c
+// Your file MUST declare the following symbols
 //
 extern uint32_t const wolfasm_map_width;
 extern uint32_t const wolfasm_map_height;
@@ -27,7 +27,78 @@ extern uint32_t const wolfasm_items_nb;
 //
 // Create the file
 //
-static int32_t create_map(char const *output_file) {
+static int32_t create_map_header(int32_t const fd) {
+  int32_t rc = 0;
+  wolfasm_map_header_t header = {
+      WOLFASM_MAP_MAGIC, wolfasm_map_width, wolfasm_map_height, {0}};
+
+  strncpy(header.name, wolfasm_map_name, sizeof(header.name) - 1);
+  do {
+    rc = (int32_t)write(fd, &header, sizeof(header));
+  } while (rc == -1 && errno == EAGAIN);
+  if (rc == -1) {
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+#define MAP_CHECK_ERR(member)                                                  \
+  if (!wolfasm_map[y * wolfasm_map_width + x].member) {                        \
+    fprintf(stderr, "Invalid " #member " at [x:%d][y:%d]", x, y);              \
+    return EXIT_FAILURE;                                                       \
+  }
+
+static int32_t create_map(int32_t const fd) {
+  int32_t rc = 0;
+
+  // Write map header
+  if (create_map_header(fd) != EXIT_SUCCESS) {
+    return EXIT_FAILURE;
+  }
+  // Check map
+  for (uint32_t x = 0; x < wolfasm_map_width; ++x) {
+    for (uint32_t y = 0; y < wolfasm_map_height; ++y) {
+      MAP_CHECK_ERR(item)
+      MAP_CHECK_ERR(enemy)
+      MAP_CHECK_ERR(padding)
+    }
+  }
+  // Write map
+  do {
+    rc = (int32_t)write(fd, wolfasm_map,
+                        sizeof(wolfasm_map[0]) * wolfasm_map_width *
+                            wolfasm_map_height);
+  } while (rc == -1 && errno == EAGAIN);
+  if (rc == -1) {
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+#undef MAP_CHECK_ERR
+
+static int32_t create_items(int32_t const fd) {
+  int32_t rc = 0;
+  // Write items header
+  wolfasm_map_items_header header = {wolfasm_items_nb};
+  do {
+    rc = (int32_t)write(fd, &header, sizeof(header));
+  } while (rc == -1 && errno == EAGAIN);
+  if (rc == -1) {
+    return EXIT_FAILURE;
+  }
+  // Write items
+  do {
+    rc = (int32_t)write(fd, wolfasm_items,
+                        sizeof(wolfasm_items[0]) * wolfasm_items_nb);
+  } while (rc == -1 && errno == EAGAIN);
+  if (rc == -1) {
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+
+static int32_t create_map_file(char const *output_file) {
   // Create file
   int32_t rc = 0;
   int32_t fd = open(output_file, O_WRONLY | O_TRUNC | O_CREAT, 0664);
@@ -36,44 +107,19 @@ static int32_t create_map(char const *output_file) {
     goto err;
   }
 
-  // Write map header
-  {
-    wolfasm_map_header_t header = {
-        WOLFASM_MAP_MAGIC, wolfasm_map_width, wolfasm_map_height, {0}};
-    strncpy(header.name, wolfasm_map_name, sizeof(header.name) - 1);
-    rc = (int32_t)write(fd, &header, sizeof(header));
-    if (rc == -1) {
-      goto err;
-    }
+  // Write map to file
+  if (create_map(fd) != EXIT_SUCCESS) {
+    goto err;
   }
-
-  // Check map
-  for (uint32_t x = 0; x < wolfasm_map_width; ++x) {
-    for (uint32_t y = 0; y < wolfasm_map_height; ++y) {
-      assert(wolfasm_map[y * wolfasm_map_width + x].item == NULL);
-      assert(wolfasm_map[y * wolfasm_map_width + x].enemy == NULL);
-      assert(wolfasm_map[y * wolfasm_map_width + x].padding == NULL);
-    }
+  // Write items to file
+  if (create_items(fd) != EXIT_SUCCESS) {
+    goto err;
   }
-  // Write map
-  rc = (int32_t)write(fd, wolfasm_map,
-                      sizeof(wolfasm_map[0]) * wolfasm_map_width *
-                          wolfasm_map_height);
-
-  // Write items header
-  {
-    wolfasm_map_items_header header = {wolfasm_items_nb};
-    rc = (int32_t)write(fd, &header, sizeof(header));
-    if (rc == -1) {
-      goto err;
-    }
-  }
-  // Write items
-  rc = (int32_t)write(fd, wolfasm_items,
-                      sizeof(wolfasm_items[0]) * wolfasm_items_nb);
 
   // We're done with generating the map
-  rc = close(fd);
+  do {
+    rc = close(fd);
+  } while (rc == -1 && errno == EAGAIN);
   if (rc == -1) {
     goto err;
   }
@@ -94,7 +140,7 @@ int main(int ac, char **av) {
     fprintf(stderr, "Usage: %s output_file\n", *av);
     ret = EXIT_FAILURE;
   } else {
-    ret = create_map(*(av + 1));
+    ret = create_map_file(*(av + 1));
   }
   return ret;
 }
