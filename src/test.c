@@ -153,7 +153,7 @@ void game_logic_cwrapper(void) {
 }
 
 // Player
-extern wolfasm_player_reset(void) __asm__("wolfasm_player_reset");
+extern void wolfasm_player_reset(void) __asm__("wolfasm_player_reset");
 void spawn_player(void);
 void spawn_player(void) {
   uint32_t x = 0;
@@ -277,9 +277,9 @@ void player_shoot(void) {
 }
 
 // Network
-void wolfasm_host_game(char const *map, uint16_t const port);
-void wolfasm_host_game(char const *map, uint16_t const port) {
-  printf("Hosting %s on port %d\n", map, port);
+void wolfasm_host_game(char const *map_file, uint16_t const port);
+void wolfasm_host_game(char const *map_file, uint16_t const port) {
+  printf("Hosting %s on port %d\n", map_file, port);
 }
 
 void wolfasm_join_game(char const *addr, uint16_t const port);
