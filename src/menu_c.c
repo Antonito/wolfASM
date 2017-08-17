@@ -33,6 +33,7 @@ extern void wolfasm_menu_event_key_backspace(void) __asm__(
 extern void wolfasm_menu_event_textinput(char const *) __asm__(
     "wolfasm_menu_event_textinput");
 
+// Small wrapper to handle events in menus
 extern void
 wolfasm_menu_events_cwrapper(void) __asm__("wolfasm_menu_events_cwrapper");
 void wolfasm_menu_events_cwrapper(void) {
