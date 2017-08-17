@@ -6,12 +6,17 @@
 
         section .text
 
-        global wolfasm_player_move_forward, wolfasm_player_move_backward, \
-        wolfasm_player_rotate_right, wolfasm_player_rotate_left,          \
-        wolfasm_player_refill_ammo, wolfasm_player_refill_life
+        global wolfasm_player_move_forward,                       \
+        wolfasm_player_move_backward,                             \
+        wolfasm_player_rotate_right,                              \
+        wolfasm_player_rotate_left,                               \
+        wolfasm_player_refill_ammo, wolfasm_player_refill_life,   \
+        wolfasm_player_reset
+
         global game_player
 
-        extern wolfasm_map_width, wolfasm_map
+        extern wolfasm_map_width, wolfasm_map, wolfasm_weapon,    \
+        wolfasm_weapon_reset_all
 
         ;; Lib C functions
         extern _cos, _sin
@@ -307,6 +312,21 @@ wolfasm_player_rotate_left:
         emms
         ret
 
+wolfasm_player_reset:
+        push      rbp
+        mov       rbp, rsp
+
+        lea       rax, [rel wolfasm_weapon]
+        mov       qword [rel game_player + wolfasm_player.weapon], rax
+        mov       dword [rel game_player + wolfasm_player.life], PLAYER_MAX_LIFE
+
+        ;; Reset weapon's stats too
+        call      wolfasm_weapon_reset_all
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
         section .data
 game_player:
 istruc wolfasm_player
@@ -318,6 +338,6 @@ istruc wolfasm_player
         at wolfasm_player.plane_y,        dq PLAYER_DEFAULT_PLA_Y
         at wolfasm_player.movement_speed, dq PLAYER_DEFAULT_MOV_SPEED
         at wolfasm_player.rotation_speed, dq PLAYER_DEFAULT_ROT_SPEED
-        at wolfasm_player.weapon,         dq 0x00 ;; TODO
+        at wolfasm_player.weapon,         dq wolfasm_weapon
         at wolfasm_player.life,           dd PLAYER_MAX_LIFE
 iend

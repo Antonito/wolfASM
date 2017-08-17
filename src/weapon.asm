@@ -5,7 +5,8 @@
         %include "weapon.inc"
         %include "sprite.inc"
 
-        global wolfasm_init_weapon, wolfasm_change_weapon, wolfasm_weapon
+        global wolfasm_init_weapon, wolfasm_change_weapon, wolfasm_weapon,  \
+        wolfasm_weapon_reset_all
 
         extern game_player, wolfasm_sprite
 
@@ -89,6 +90,27 @@ wolfasm_change_weapon:
         mov       rax, [rax + wolfasm_weapon_s.sprite]
         mov       word [rax + wolfasm_sprite_s.current_anim], 0
         mov       dword [rax + wolfasm_sprite_s.trigger], 0
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
+wolfasm_weapon_reset_all:
+        push      rbp
+        mov       rbp, rsp
+
+        lea       r8, [rel wolfasm_weapon]
+        mov       eax, wolfasm_weapon_s.size
+        ;; Reset pistol
+        mov       word [r8 + wolfasm_weapon_s.ammo], WOLFASM_PISTOL_MAX_AMMO / 2
+
+        add       r8, rax
+        ;; Reset shotgun
+        mov       word [r8 + wolfasm_weapon_s.ammo], WOLFASM_SHOTGUN_MAX_AMMO / 2
+
+        add       r8, rax
+        ;; Reset barrel
+        mov       word [r8 + wolfasm_weapon_s.ammo], WOLFASM_BARREL_MAX_AMMO / 2
 
         mov       rsp, rbp
         pop       rbp

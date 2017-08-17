@@ -153,6 +153,7 @@ void game_logic_cwrapper(void) {
 }
 
 // Player
+extern wolfasm_player_reset(void) __asm__("wolfasm_player_reset");
 void spawn_player(void);
 void spawn_player(void) {
   uint32_t x = 0;
@@ -162,9 +163,9 @@ void spawn_player(void) {
     x = (uint32_t)rand() % map_width;
     y = (uint32_t)rand() % map_height;
   } while (map[y * map_width + x].value || map[y * map_width + x].enemy);
+  wolfasm_player_reset();
   game_player.pos_x = (double)x;
   game_player.pos_y = (double)y;
-  // TODO: Reinit player's data
 }
 
 // Enemy
