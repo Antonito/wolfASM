@@ -275,23 +275,6 @@ void player_shoot(void) {
   }
 }
 
-// Menu
-extern void
-wolfasm_display_text(char const *text, SDL_Rect const *pos,
-                     uint32_t cololor) __asm__("wolfasm_display_text");
-
-void wolfasm_regulate_framerate(uint32_t fps);
-void wolfasm_regulate_framerate(uint32_t fps) {
-  static uint32_t old_ticks = 0;
-  uint32_t ticks = SDL_GetTicks();
-  uint32_t elapsed = ticks - old_ticks;
-
-  if (elapsed < 1000u / fps) {
-    SDL_Delay((1000u / fps) - elapsed);
-  }
-  old_ticks = ticks;
-}
-
 // Network
 void wolfasm_host_game(char const *map, uint16_t const port);
 void wolfasm_host_game(char const *map, uint16_t const port) {

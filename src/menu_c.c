@@ -5,10 +5,9 @@
 
 extern void render_sprite(wolfasm_sprite_t *sprite, int x, int y,
                           SDL_Rect *clip) __asm__("wolfasm_render_sprite");
-extern void render_button(char const *text, int32_t const x, int32_t y,
-                          int32_t width,
-                          bool selected) __asm__("wolfasm_menu_render_button");
 extern void wolfasm_menu_play_music(void) __asm__("wolfasm_menu_play_music");
+extern void
+wolfasm_regulate_framerate(void) __asm__("wolfasm_regulate_framerate");
 
 enum wolfasm_menus {
   MENU_MAIN,
@@ -17,25 +16,6 @@ enum wolfasm_menus {
   MENU_MULTIPLAYER_CONNECT,
   MENU_MULTIPLAYER_HOST,
   NB_MENUS
-};
-
-enum wolfasm_buttons_multiplayer {
-  BUTTON_MP_HOST = 0,
-  BUTTON_MP_CONNECT,
-  BUTTON_MP_BACK,
-  NB_BUTTON_MULTIPLAYER
-};
-
-enum wolfasm_buttons_multiplayer_connect {
-  BUTTON_MP_CO_CONNECT = 0,
-  BUTTON_MP_CO_BACK,
-  NB_BUTTON_MULTIPLAYER_CONNECT
-};
-
-enum wolfasm_buttons_multiplayer_host {
-  BUTTON_MP_HOST_MAP = 0,
-  BUTTON_MP_HOST_BACK,
-  NB_BUTTON_MULTIPLAYER_HOST
 };
 
 //
@@ -96,111 +76,7 @@ err:
   exit(1);
 }
 
-//
-// Multiplayer Connect
-//
-static void wolfasm_multiplayer_connect_connect() {
-  SDL_StopTextInput();
-  Mix_HaltMusic();
-  wolfasm_join_game(wolfasm_connect, strtol(wolfasm_port, NULL, 10));
-  wolfasm_menu_play_music();
-  SDL_StartTextInput();
-}
-
-static void wolfasm_multiplayer_connect_back() {
-  menu = MENU_MULTIPLAYER;
-  wolfasm_menu_nb_buttons = NB_BUTTON_MULTIPLAYER;
-  selected_button = 0;
-  wolfasm_connect_len = 0;
-  wolfasm_port_len = 0;
-  selected_text_field_max_len = 0;
-  selected_text_field_len = NULL;
-  selected_text_field = NULL;
-  memset(wolfasm_connect, '\0', sizeof(wolfasm_connect));
-  memset(wolfasm_port, '\0', sizeof(wolfasm_port));
-  SDL_StopTextInput();
-}
-
-static void wolfasm_multiplayer_connect_buttons() {
-  render_button("Host: ", window_width / 2, window_height / 2,
-                window_width / 16, 0);
-  if (wolfasm_connect[0]) {
-    render_button(wolfasm_connect, window_width / 2 + window_width / 16,
-                  window_height / 2, strlen(wolfasm_connect) * 15, 0);
-  }
-  render_button("Port: ", window_width / 2,
-                window_height / 2 + window_height / 8, window_width / 16, 0);
-  if (wolfasm_port[0]) {
-    render_button(wolfasm_port, window_width / 2 + +window_width / 16,
-                  window_height / 2 + window_height / 8,
-                  strlen(wolfasm_port) * 15, 0);
-  }
-  render_button("Connect", window_width / 2,
-                window_height / 2 + 2 * (window_height / 8), window_width / 8,
-                selected_button == BUTTON_MP_HOST_MAP);
-  render_button("Back", window_width / 2,
-                window_height / 2 + 3 * (window_height / 8), window_width / 16,
-                selected_button == BUTTON_MP_HOST_BACK);
-}
-
-//
-// Multiplayer host
-//
-static void wolfasm_multiplayer_host_map() {
-  char filename[512];
-
-  strncpy(filename, "./resources/map/", sizeof(filename) - 1);
-  strncat(filename, wolfasm_selected_map, sizeof(filename) - 1);
-  Mix_HaltMusic();
-  SDL_StopTextInput();
-  wolfasm_host_game(filename, strtol(wolfasm_port, NULL, 10));
-  wolfasm_menu_play_music();
-  SDL_StartTextInput();
-}
-
-static void wolfasm_multiplayer_host_back() {
-  menu = MENU_MULTIPLAYER;
-  wolfasm_menu_nb_buttons = NB_BUTTON_MULTIPLAYER;
-  selected_button = 0;
-  wolfasm_port_len = 0;
-  selected_text_field_max_len = 0;
-  selected_text_field_len = NULL;
-  selected_text_field = NULL;
-  memset(wolfasm_port, '\0', sizeof(wolfasm_port));
-  SDL_StopTextInput();
-}
-
-static void wolfasm_multiplayer_host_buttons() {
-  char buff[255 + 1 + 4];
-  snprintf(buff, sizeof(buff), "< %s >", wolfasm_selected_map);
-
-  render_button("Port: ", window_width / 2, window_height / 2,
-                window_width / 16, 0);
-  if (wolfasm_port[0]) {
-    render_button(wolfasm_port, window_width / 2 + window_width / 16,
-                  window_height / 2, strlen(wolfasm_port) * 15, 0);
-  }
-  render_button(buff, window_width / 2, window_height / 2 + (window_height / 8),
-                window_width / 8, selected_button == BUTTON_MP_CO_CONNECT);
-  render_button("Back", window_width / 2,
-                window_height / 2 + 2 * (window_height / 8), window_width / 16,
-                selected_button == BUTTON_MP_CO_BACK);
-}
-
-extern void (*callbacks_main_menu[])() __asm__("callbacks_main_menu");
-extern void (*callbacks_multiplayer_menu[])() __asm__(
-    "callbacks_multiplayer_menu");
-extern void (*callback_sm_solo[])() __asm__("callback_sm_solo");
-static void (*callback_mp_co[])() = {wolfasm_multiplayer_connect_connect,
-                                     wolfasm_multiplayer_connect_back,
-                                     wolfasm_multiplayer_connect_buttons};
-static void (*callback_mp_host[])() = {wolfasm_multiplayer_host_map,
-                                       wolfasm_multiplayer_host_back,
-                                       wolfasm_multiplayer_host_buttons};
-
-static void (**callbacks[])() = {&callbacks_main_menu,
-                                 &callbacks_multiplayer_menu, &callback_sm_solo,
-                                 &callback_mp_co, &callback_mp_host};
+extern void (**callbacks[])() __asm__("callbacks");
 
 int wolfasm_menu(void) {
   srand((unsigned int)time(NULL));
@@ -321,7 +197,7 @@ int wolfasm_menu(void) {
     (callbacks[menu][wolfasm_menu_nb_buttons])();
 
     SDL_RenderPresent(window_renderer);
-    wolfasm_regulate_framerate(60);
+    wolfasm_regulate_framerate();
   }
   return EXIT_SUCCESS;
 }
