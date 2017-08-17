@@ -35,6 +35,11 @@ SDL_Event game_events __asm__("game_events");
 
 typedef struct wolfasm_weapon_s wolfasm_weapon_t;
 
+#if defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpadded"
+#endif
+
 // Player informations
 struct wolfasm_player {
   double pos_x, pos_y;
@@ -55,6 +60,10 @@ typedef struct wolfasm_map_case {
   void *padding;
 } wolfasm_map_case_t;
 _Static_assert(sizeof(wolfasm_map_case_t) == 32, "Invalid map case size");
+
+#if defined __clang__
+#pragma clang diagnostic pop
+#endif
 
 // Window informations
 extern SDL_Window *window_ptr __asm__("window_ptr");

@@ -12,7 +12,10 @@
         wolfasm_menu_event_key_up, wolfasm_menu_event_key_down,  \
         wolfasm_menu_event_key_left,                             \
         wolfasm_menu_event_key_right,                            \
-        wolfasm_menu_event_key_tab
+        wolfasm_menu_event_key_tab,                              \
+        wolfasm_menu_event_key_enter,                           \
+        wolfasm_menu_event_key_backspace,                       \
+        wolfasm_menu_event_textinput
 
         extern gui_font, wolfasm_display_text, window_height,   \
         window_width, wolfasm, wolfasm_menu_play_music,         \
@@ -28,10 +31,10 @@
         ;; LibC functions
         extern _strncpy, _strncat, _snprintf, _strtol, _memset, \
         _strlen, _printf, _exit, _opendir, _free,               \
-        _strdup, _closedir, _srand, _time
+        _strdup, _closedir, _srand, _time, _strlen
 
         ;; TODO: rm
-        global selected_text_field_max_len, selected_text_field_len, selected_text_field, wolfasm_connect, wolfasm_connect_len, wolfasm_port, wolfasm_port_len, callbacks_main_menu, menu, selected_button, wolfasm_menu_nb_buttons, running, callback_sm_solo, wolfasm_selected_map, callbacks_multiplayer_menu, callback_mp_co, callback_mp_host, callbacks, wolfasm_regulate_framerate, wolfasm_maps, wolfasm_nb_maps, wolfasm_load_maps, wolfasm_current_map
+        global selected_text_field, selected_text_field_len, selected_text_field_max_len
         extern _wolfasm_join_game, _wolfasm_host_game, _print_dir
 
         section .text
@@ -1029,6 +1032,96 @@ wolfasm_menu_event_key_tab:
         lea     rax, [rel wolfasm_connect_len]
         mov     qword [rel selected_text_field_len], rax
 .end:
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_enter:
+        push    rbp
+        mov     rbp, rsp
+
+        lea     rdi, [rel callbacks]
+        mov     eax, [rel menu]
+        mov     rdi, [rdi + rax * 8]
+        mov     eax, [rel selected_button]
+        mov     rdi, [rdi + rax * 8]
+        call    rdi
+
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_backspace:
+        push    rbp
+        mov     rbp, rsp
+
+        cmp     dword [rel menu], MENU_MULTIPLAYER_CONNECT
+        je      .ok
+        cmp     dword [rel menu], MENU_MULTIPLAYER_HOST
+        jne     .end
+
+.ok:
+        mov     rax, [rel selected_text_field_len]
+        cmp     dword [rax], 0
+        jle     .end
+
+        mov     rdi, [rel selected_text_field]
+        mov     dword r8d, [rax]
+        dec     r8d
+        mov     byte [rdi + r8], 0
+
+        mov     edi, [eax]
+        dec     edi
+        mov     dword [rax], edi
+
+.end:
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+;; str in rdi
+wolfasm_menu_event_textinput:
+        push    rbp
+        mov     rbp, rsp
+
+        sub     rsp, 8
+        push    rdi
+
+        call    _strlen
+        mov     r10, [rel selected_text_field_len]
+        mov     r8d, [r10]
+        add     r8d, eax
+
+        mov     r9d, [rel selected_text_field_max_len]
+        sub     r9d, 1
+
+        cmp     r8d, r9d
+        jl      .copy
+
+        sub     r9d, [r10]
+        mov     eax, r9d
+.copy:
+        cmp     eax, 0
+        jle     .done
+
+        push    r10
+        push    rax
+
+        mov     rdi, [rel selected_text_field]
+        add     rdi, [r10]
+        mov     rsi, [rsp + 16]
+        mov     edx, eax
+        call    _strncpy
+
+        pop     rax
+        pop     r10
+
+        add     eax, [r10]
+        mov     [r10], eax
+.done:
+        pop     rdi
+        add     rsp, 8
+
         mov     rsp, rbp
         pop     rbp
         ret
