@@ -2,29 +2,93 @@
 
         %include "sdl.inc"
         %include "menu.inc"
+        %include "sprite.inc"
 
         global wolfasm_menu_render_button,                      \
-        wolfasm_regulate_framerate
+        wolfasm_regulate_framerate, wolfasm_menu
+
+        ;; events
+        global wolfasm_menu_event_quit,                          \
+        wolfasm_menu_event_key_up, wolfasm_menu_event_key_down,  \
+        wolfasm_menu_event_key_left,                             \
+        wolfasm_menu_event_key_right,                            \
+        wolfasm_menu_event_key_tab
 
         extern gui_font, wolfasm_display_text, window_height,   \
         window_width, wolfasm, wolfasm_menu_play_music,         \
-        wolfasm_read_dir
+        wolfasm_read_dir, wolfasm_menu_events_cwrapper,         \
+        window_renderer, wolfasm_render_sprite, wolfasm_sprite
 
         ;; SDL functions
         extern _TTF_SetFontStyle, _Mix_HaltMusic,               \
         _SDL_StartTextInput, _SDL_StopTextInput,                \
-        _SDL_GetTicks, _SDL_Delay
+        _SDL_GetTicks, _SDL_Delay, _SDL_RenderClear,            \
+        _SDL_RenderPresent
 
         ;; LibC functions
         extern _strncpy, _strncat, _snprintf, _strtol, _memset, \
-        _strlen, _printf, _exit, _opendir, _readdir, _free,     \
-        _strdup, _closedir
+        _strlen, _printf, _exit, _opendir, _free,               \
+        _strdup, _closedir, _srand, _time
 
         ;; TODO: rm
         global selected_text_field_max_len, selected_text_field_len, selected_text_field, wolfasm_connect, wolfasm_connect_len, wolfasm_port, wolfasm_port_len, callbacks_main_menu, menu, selected_button, wolfasm_menu_nb_buttons, running, callback_sm_solo, wolfasm_selected_map, callbacks_multiplayer_menu, callback_mp_co, callback_mp_host, callbacks, wolfasm_regulate_framerate, wolfasm_maps, wolfasm_nb_maps, wolfasm_load_maps, wolfasm_current_map
         extern _wolfasm_join_game, _wolfasm_host_game, _print_dir
 
         section .text
+wolfasm_menu:
+        push      rbp
+        mov       rbp, rsp
+
+        ;; Update rand seed
+        xor       rdi, rdi
+        call      _time
+        mov       rdi, rax
+        call      _srand
+
+        call      wolfasm_menu_play_music
+
+.loop:
+        cmp       byte [rel running], 0
+        je        .loop_end
+
+        ;; Handle events
+        call      wolfasm_menu_events_cwrapper
+
+        ;; Update display
+        mov       rdi, [rel window_renderer]
+        call      _SDL_RenderClear
+
+        ;; Display background
+        lea       rdi, [rel wolfasm_sprite]
+        mov       eax, wolfasm_sprite_s.size
+        mov       ecx, 3
+        mul       ecx
+        lea       rdi, [rdi + rax]
+        xor       rsi, rsi
+        xor       rdx, rdx
+        xor       rcx, rcx
+        call      wolfasm_render_sprite
+
+        ;; Render buttons
+        lea       rdi, [rel callbacks]
+        mov       eax, [rel menu]
+        mov       rdi, [rdi + rax * 8]
+        mov       eax, [rel wolfasm_menu_nb_buttons]
+        mov       rdi, [rdi + rax * 8]
+        call      rdi
+
+        mov       rdi, [rel window_renderer]
+        call      _SDL_RenderPresent
+
+        call      wolfasm_regulate_framerate
+
+        jmp       .loop
+.loop_end:
+
+        mov       rsp, rbp
+        pop       rbp
+        ret
+
 wolfasm_regulate_framerate:
         push      rbp
         mov       rbp, rsp
@@ -75,16 +139,6 @@ wolfasm_load_maps:
         call      wolfasm_read_dir
         cmp       rax, 0
         je        .loop_end
-
-        push      rdi
-        push      rax
-
-        mov       rdi, found_str
-        mov       rsi, rax
-        call      _printf
-
-        pop       rax
-        pop       rdi
 
         cmp       byte [rax], '.'
         je        .next_loop
@@ -843,11 +897,143 @@ wolfasm_multiplayer_host_buttons:
         pop     rbp
         ret
 
+        ;;
+        ;; Menu events
+        ;;
+wolfasm_menu_event_quit:
+        push    rbp
+        mov     rbp, rsp
 
+        mov     byte [rel running], 0
+
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_up:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     eax, [rel selected_button]
+        cmp     eax, 0
+        jne     .end_button
+
+        mov     eax, [rel wolfasm_menu_nb_buttons]
+.end_button:
+        dec     eax
+        mov     dword [rel selected_button], eax
+
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_down:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     eax, [rel selected_button]
+        inc     eax
+        cmp     eax, [rel wolfasm_menu_nb_buttons]
+        jne     .end_button
+        xor     eax, eax
+.end_button:
+        mov     dword [rel selected_button], eax
+
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_left:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     eax, [rel menu]
+        cmp     eax, MENU_SELECT_MAP_SOLO
+        je      .ok
+
+        cmp     eax, MENU_MULTIPLAYER_HOST
+        jne     .end
+
+.ok:
+        mov     eax, [rel wolfasm_current_map]
+        dec     eax
+        cmp     eax, 0
+        jge     .store
+
+        mov     eax, [rel wolfasm_nb_maps]
+        dec     eax
+
+.store:
+        mov     dword [rel wolfasm_current_map], eax
+        lea     rdi, [rel wolfasm_maps]
+        mov     rax, [rdi + rax * 8]
+        mov     qword [rel wolfasm_selected_map], rax
+.end:
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_right:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     eax, [rel menu]
+        cmp     eax, MENU_SELECT_MAP_SOLO
+        je      .ok
+
+        cmp     eax, MENU_MULTIPLAYER_HOST
+        jne     .end
+
+.ok:
+        mov     eax, [rel wolfasm_current_map]
+        inc     eax
+        cmp     eax, [rel wolfasm_nb_maps]
+        jl     .store
+
+        xor     eax, eax
+.store:
+        mov     dword [rel wolfasm_current_map], eax
+        lea     rdi, [rel wolfasm_maps]
+        mov     rax, [rdi + rax * 8]
+        mov     qword [rel wolfasm_selected_map], rax
+.end:
+
+        mov     rsp, rbp
+        pop     rbp
+        ret
+
+wolfasm_menu_event_key_tab:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     eax, [rel menu]
+        cmp     eax, MENU_MULTIPLAYER_CONNECT
+        jne     .end
+
+        mov     rax, [rel selected_text_field]
+        lea     rdi, [rel wolfasm_connect]
+        cmp     rax, rdi
+        jne     .turn_to_connect
+
+.turn_to_port:
+        lea     rax, [rel wolfasm_port]
+        mov     qword [rel selected_text_field], rax
+        mov     dword [rel selected_text_field_max_len], 6
+        lea     rax, [rel wolfasm_port_len]
+        mov     qword [rel selected_text_field_len], rax
+        jmp     .end
+.turn_to_connect:
+        lea     rax, [rel wolfasm_connect]
+        mov     qword [rel selected_text_field], rax
+        mov     dword [rel selected_text_field_max_len], 255
+        lea     rax, [rel wolfasm_connect_len]
+        mov     qword [rel selected_text_field_len], rax
+.end:
+        mov     rsp, rbp
+        pop     rbp
+        ret
 
         section .rodata
-        ;; TODO: rm
-        found_str: db "Found %s", 0x0A, 0x00
 ;; Text strings
 play_txt:               db      "Play", 0x00
 multiplayer_txt:        db      "Multiplayer", 0x00

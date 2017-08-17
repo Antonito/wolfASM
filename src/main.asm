@@ -6,10 +6,7 @@
         extern _exit
 
         ;; Functions
-        extern wolfasm, wolfasm_init, wolfasm_deinit
-
-        ;; TODO: rm
-        extern _wolfasm_menu
+        extern wolfasm, wolfasm_init, wolfasm_deinit, wolfasm_menu
 
 _main:
         push  rbp
@@ -17,7 +14,7 @@ _main:
 
         ;; Start the game
         call  wolfasm_init
-        call  _wolfasm_menu
+        call  wolfasm_menu
 
         sub   rsp, 8
         push  rax
