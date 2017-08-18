@@ -1,3 +1,5 @@
+UNAME_S := $(shell uname -s)
+
 AS:=			nasm
 CC?=			clang
 LD:=			ld
@@ -7,13 +9,30 @@ DEBUG?=		yes
 
 NAME:=		wolfasm
 
-SRC:=			$(shell find -E ./src -regex '.*\.(asm|c)')
+CFLAGS+=	-I./include -march=native	$(shell sdl2-config --cflags)
+ASFLAGS+=	-I./include/
+LDFLAGS+=
 
-CFLAGS+=	-I./include -Weverything -Wno-nonportable-system-include-path				\
- 					-march=native
-ASFLAGS+=	-f macho64 -I./include/
-LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2 -lSDL2_ttf -lSDL2_Image -lSDL2_Mixer	\
-					-macosx_version_min 10.12
+
+# Add your OS flags here
+ifeq ($(UNAME_S),Darwin)
+
+SRC:=			$(shell find -E ./src -regex '.*\.(asm|c)')
+CFLAGS+=	-Weverything
+ASFLAGS+=	-f macho64
+LDFLAGS+=	-lc -ldylib1.o -dynamic -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer	\
+ 					-macosx_version_min 10.12
+
+else ifeq ($(UNAME_S),Linux)
+
+SRC:=			$(shell find ./src -regextype posix-extended -regex ".*\.(asm|c)")
+CFLAGS+=
+ASFLAGS+=	-f elf64
+LDFLAGS+=	-lc -lSDL2 -lSDL2_ttf -lSDL2_image -lSDL2_mixer -dynamic-linker /lib64/ld-linux-x86-64.so.2
+
+else
+$(error Unsupported operating system)
+endif
 
 ifeq ($(DEBUG),yes)
 CFLAGS+=	-O0 -g

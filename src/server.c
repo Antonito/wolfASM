@@ -52,7 +52,7 @@ err:
 #define WOLFASM_SRV_MAX_CLIENTS 2
 static struct wolfasm_network_client clients[WOLFASM_SRV_MAX_CLIENTS];
 static int32_t nb_clients = 0;
-static void (*read_callback[])() const = {};
+// static void (*read_callback[])() const = {};
 
 void wolfasm_server(char const *map_file, uint16_t const port) {
   // Initialize TCP socket

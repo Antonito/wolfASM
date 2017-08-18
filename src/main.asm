@@ -1,6 +1,6 @@
         [bits 64]
         section .text
-        global _main
+        global _start, _main
 
         ;; Syscall
         extern _exit
@@ -8,6 +8,7 @@
         ;; Functions
         extern wolfasm, wolfasm_init, wolfasm_deinit, wolfasm_menu
 
+_start:
 _main:
         push  rbp
         mov   rbp, rsp

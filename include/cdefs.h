@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_Mixer.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdbool.h>
 #include <stdint.h>
 
