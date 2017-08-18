@@ -4,6 +4,7 @@
 // This file declares every data structure used during network exchanges
 //
 
+#include <netinet/in.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -57,6 +58,8 @@ _Static_assert(sizeof(struct wolfasm_tcp_packet_header) == 8,
 //
 // Implementation datas
 //
+typedef int32_t tcp_socket_t;
+
 enum wolfasm_network_client_state {
   CLI_AUTHENTICATING = 0,
   CLI_MAP,
@@ -69,7 +72,8 @@ enum wolfasm_network_client_state {
 #endif
 
 struct wolfasm_network_client {
-  int32_t sock;
+  tcp_socket_t sock;
+  struct sockaddr_in addr;
   enum wolfasm_network_client_state state;
   bool can_write;
 };
@@ -77,3 +81,18 @@ struct wolfasm_network_client {
 #if defined __clang__
 #pragma clang diagnostic pop
 #endif
+
+//
+// Network utilities
+//
+int32_t wolfasm_network_read(tcp_socket_t const sock, void *buf, size_t len);
+int32_t wolfasm_network_write(tcp_socket_t const sock, void const *buf,
+                              size_t len);
+
+//
+// Serialization
+//
+void wolfasm_network_tcp_pck_header_deserialize(
+    struct wolfasm_tcp_packet_header *header);
+void wolfasm_network_tcp_pck_header_serialize(
+    struct wolfasm_tcp_packet_header *header);
